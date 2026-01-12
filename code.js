@@ -24,6 +24,8 @@ const CONFIG_TYPES = {
   SHINE_INT: ["angle", "spread"],
   SHINE_FLOAT: ["intensity"],
   SHINE_STRING: ["type", "color"],
+  HOVER_FLOAT: ["borderWidth", "scale", "duration"],
+  HOVER_STRING: ["borderColor", "easing"],
 };
 
 // Base configuration for glass effect
@@ -53,16 +55,25 @@ const baseConfig = {
   warp: {
     angle: 195,
     intensity: 0,
-    color: "hsla(40, 100%, 80%, 1)",
+    color: "rgba(255, 221, 153, 0)",
   },
 
   // Shine effect
   shine: {
     angle: 135,
-    intensity: 0.4,
-    color: "hsla(70, 100%, 70%, 0.4)",
+    intensity: 0.1,
+    color: "hsla(59, 86%, 70%, 0.34)",
     spread: 40,
     type: "shadow",
+  },
+
+  // Hover effects
+  hover: {
+    borderWidth: 1,
+    borderColor: "hsla(19, 100%, 72%, 0.55)",
+    scale: 1.05,
+    duration: 0.3,
+    easing: "ease-in-out",
   },
 };
 
@@ -147,6 +158,24 @@ const parseDatasetConfig = (element) => {
   });
   if (Object.keys(shine).length > 0) {
     config.shine = shine;
+  }
+
+  // Parse hover settings
+  const hover = {};
+  CONFIG_TYPES.HOVER_FLOAT.forEach((key) => {
+    const dataKey = `glassHover${capitalizeFirstLetter(key)}`;
+    if (dataset[dataKey] !== undefined) {
+      hover[key] = parseFloat(dataset[dataKey]);
+    }
+  });
+  CONFIG_TYPES.HOVER_STRING.forEach((key) => {
+    const dataKey = `glassHover${capitalizeFirstLetter(key)}`;
+    if (dataset[dataKey] !== undefined) {
+      hover[key] = dataset[dataKey];
+    }
+  });
+  if (Object.keys(hover).length > 0) {
+    config.hover = hover;
   }
 
   return config;
@@ -364,12 +393,14 @@ class GlassEffect {
       ...config,
       warp: { ...baseConfig.warp, ...config.warp },
       shine: { ...baseConfig.shine, ...config.shine },
+      hover: { ...baseConfig.hover, ...config.hover },
     };
     this.filterId = generateUniqueId();
 
     this.createFilter();
     this.cacheFilterElements();
     this.createShineOverlay();
+    this.setupHoverEffects();
     this.init();
     this.setupResizeObserver();
   }
@@ -562,6 +593,41 @@ class GlassEffect {
    */
   init() {
     this.update();
+  }
+
+  /**
+   * Sets up hover effects for border glow and transitions
+   */
+  setupHoverEffects() {
+    const { borderWidth, borderColor, scale, duration, easing } =
+      this.config.hover;
+
+    if (borderWidth > 0) {
+      // Set default border with transparent color
+      this.element.style.border = `${borderWidth}px solid transparent`;
+      this.element.style.transition = `transform ${duration}s ${easing}, border-color ${duration}s ${easing}`;
+
+      this.element.addEventListener("mouseenter", () => {
+        if (scale !== 1) {
+          this.element.style.transform = `scale(${scale})`;
+        }
+        this.element.style.borderColor = borderColor;
+      });
+
+      this.element.addEventListener("mouseleave", () => {
+        this.element.style.transform = "";
+        this.element.style.borderColor = "transparent";
+      });
+    } else if (scale !== 1) {
+      // Only scale, no border
+      this.element.style.transition = `transform ${duration}s ${easing}`;
+      this.element.addEventListener("mouseenter", () => {
+        this.element.style.transform = `scale(${scale})`;
+      });
+      this.element.addEventListener("mouseleave", () => {
+        this.element.style.transform = "";
+      });
+    }
   }
 
   /**
