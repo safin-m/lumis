@@ -1,0 +1,42 @@
+{
+  "name": "glass-effect",
+  "version": "1.0.0",
+  "description": "A performant glass morphism effect library with displacement mapping and chromatic aberration",
+  "type": "module",
+  "main": "./dist/glass-effect.cjs",
+  "module": "./dist/glass-effect.esm.js",
+  "browser": "./dist/glass-effect.min.js",
+  "unpkg": "./dist/glass-effect.min.js",
+  "jsdelivr": "./dist/glass-effect.min.js",
+  "exports": {
+    ".": {
+      "import": "./dist/glass-effect.esm.js",
+      "require": "./dist/glass-effect.cjs",
+      "browser": "./dist/glass-effect.min.js",
+      "default": "./dist/glass-effect.esm.js"
+    },
+    "./umd": "./dist/glass-effect.umd.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node build.js",
+    "dev": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "glass",
+    "glassmorphism",
+    "backdrop-filter",
+    "svg-filter",
+    "displacement-map",
+    "chromatic-aberration",
+    "ui",
+    "design"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.20.0"
+  }
+}

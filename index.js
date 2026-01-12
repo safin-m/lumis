@@ -16,5 +16,4 @@ const initGlassEffects = () => {
 
 document.addEventListener("DOMContentLoaded", initGlassEffects);
 
-// Export for manual usage
 export { baseConfig, GlassEffect };
