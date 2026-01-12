@@ -18,25 +18,52 @@ const CONFIG_TYPES = {
   INT: ["scale", "radius", "blur", "lightness", "r", "g", "b"],
   FLOAT: ["frost", "saturation", "displace", "border", "alpha"],
   STRING: ["blend", "x", "y"],
+  WARP_INT: ["angle"],
+  WARP_FLOAT: ["intensity"],
+  WARP_STRING: ["color"],
+  SHINE_INT: ["angle", "spread"],
+  SHINE_FLOAT: ["intensity"],
+  SHINE_STRING: ["type", "color"],
 };
 
 // Base configuration for glass effect
 const baseConfig = {
+  // Core glass effect
   scale: -180,
   radius: 16,
+  frost: 0,
+  saturation: 1,
+
+  // Displacement map
   border: 0.07,
   lightness: 50,
-  displace: 0,
-  blend: "difference",
-  x: "R",
-  y: "B",
   alpha: 0.93,
   blur: 11,
+  displace: 0,
+  blend: "difference",
+
+  // Chromatic aberration
+  x: "R",
+  y: "B",
   r: 0,
   g: 10,
   b: 20,
-  frost: 0,
-  saturation: 1,
+
+  // Warp effect
+  warp: {
+    angle: 195,
+    intensity: 0,
+    color: "hsla(40, 100%, 80%, 1)",
+  },
+
+  // Shine effect
+  shine: {
+    angle: 135,
+    intensity: 0.4,
+    color: "hsla(70, 100%, 70%, 0.4)",
+    spread: 40,
+    type: "shadow",
+  },
 };
 
 // Helper Functions
@@ -73,6 +100,54 @@ const parseDatasetConfig = (element) => {
       config[key] = dataset[dataKey];
     }
   });
+
+  // Parse warp settings
+  const warp = {};
+  CONFIG_TYPES.WARP_INT.forEach((key) => {
+    const dataKey = `glassWarp${capitalizeFirstLetter(key)}`;
+    if (dataset[dataKey] !== undefined) {
+      warp[key] = parseInt(dataset[dataKey], 10);
+    }
+  });
+  CONFIG_TYPES.WARP_FLOAT.forEach((key) => {
+    const dataKey = `glassWarp${capitalizeFirstLetter(key)}`;
+    if (dataset[dataKey] !== undefined) {
+      warp[key] = parseFloat(dataset[dataKey]);
+    }
+  });
+  CONFIG_TYPES.WARP_STRING.forEach((key) => {
+    const dataKey = `glassWarp${capitalizeFirstLetter(key)}`;
+    if (dataset[dataKey] !== undefined) {
+      warp[key] = dataset[dataKey];
+    }
+  });
+  if (Object.keys(warp).length > 0) {
+    config.warp = warp;
+  }
+
+  // Parse shine settings
+  const shine = {};
+  CONFIG_TYPES.SHINE_INT.forEach((key) => {
+    const dataKey = `glassShine${capitalizeFirstLetter(key)}`;
+    if (dataset[dataKey] !== undefined) {
+      shine[key] = parseInt(dataset[dataKey], 10);
+    }
+  });
+  CONFIG_TYPES.SHINE_FLOAT.forEach((key) => {
+    const dataKey = `glassShine${capitalizeFirstLetter(key)}`;
+    if (dataset[dataKey] !== undefined) {
+      shine[key] = parseFloat(dataset[dataKey]);
+    }
+  });
+  CONFIG_TYPES.SHINE_STRING.forEach((key) => {
+    const dataKey = `glassShine${capitalizeFirstLetter(key)}`;
+    if (dataset[dataKey] !== undefined) {
+      shine[key] = dataset[dataKey];
+    }
+  });
+  if (Object.keys(shine).length > 0) {
+    config.shine = shine;
+  }
 
   return config;
 };
@@ -193,9 +268,31 @@ class DisplacementMapBuilder {
       ${extraAttrs}/>`;
   }
 
+  createWarpGradient() {
+    const { angle, intensity, color } = this.config.warp;
+
+    if (intensity === 0) return "";
+
+    // Convert angle to radians and calculate gradient direction
+    const angleRad = (angle * Math.PI) / 180;
+    const x1 = 50 + 50 * Math.cos(angleRad + Math.PI);
+    const y1 = 50 + 50 * Math.sin(angleRad + Math.PI);
+    const x2 = 50 + 50 * Math.cos(angleRad);
+    const y2 = 50 + 50 * Math.sin(angleRad);
+
+    return `
+      <linearGradient id="warp-${this.filterId}" x1="${x1}%" y1="${y1}%" x2="${x2}%" y2="${y2}%">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0"/>
+        <stop offset="50%" stop-color="${color}" stop-opacity="${intensity}"/>
+        <stop offset="100%" stop-color="white" stop-opacity="0"/>
+      </linearGradient>
+    `;
+  }
+
   build() {
     const { width, height, border, lightness, alpha, blur, blend } =
       this.config;
+    const { intensity: warpIntensity } = this.config.warp;
 
     // Calculate border size and inner dimensions
     const borderSize = Math.min(width, height) * (border * 0.5);
@@ -207,6 +304,7 @@ class DisplacementMapBuilder {
         <defs>
           ${this.createGradient(`red-${this.filterId}`, "horizontal")}
           ${this.createGradient(`blue-${this.filterId}`, "vertical")}
+          ${this.createWarpGradient()}
         </defs>
         
         <!-- Black background -->
@@ -234,6 +332,20 @@ class DisplacementMapBuilder {
           `hsl(0 0% ${lightness}% / ${alpha})`,
           `style="filter:blur(${blur}px)"`
         )}
+        
+        <!-- Warp effect -->
+        ${
+          warpIntensity > 0
+            ? this.createRect(
+                0,
+                0,
+                width,
+                height,
+                `url(#warp-${this.filterId})`,
+                `style="mix-blend-mode: lighten"`
+              )
+            : ""
+        }
       </svg>
     `;
   }
@@ -246,11 +358,18 @@ class DisplacementMapBuilder {
 class GlassEffect {
   constructor(element, config = {}) {
     this.element = element;
-    this.config = { ...baseConfig, ...config };
+    // Deep merge for nested objects
+    this.config = {
+      ...baseConfig,
+      ...config,
+      warp: { ...baseConfig.warp, ...config.warp },
+      shine: { ...baseConfig.shine, ...config.shine },
+    };
     this.filterId = generateUniqueId();
 
     this.createFilter();
     this.cacheFilterElements();
+    this.createShineOverlay();
     this.init();
     this.setupResizeObserver();
   }
@@ -274,6 +393,30 @@ class GlassEffect {
 
     document.body.appendChild(svg);
     this.svgElement = svg;
+  }
+
+  /**
+   * Creates style element for pseudo-element shine effect
+   */
+  createShineOverlay() {
+    if (!document.getElementById("glass-effect-shine-styles")) {
+      const style = document.createElement("style");
+      style.id = "glass-effect-shine-styles";
+      style.textContent = `
+        .glass-effect-shine::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          pointer-events: none;
+          mix-blend-mode: screen;
+          background: var(--shine-background, none);
+          box-shadow: var(--shine-shadow, none);
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    this.element.classList.add("glass-effect-shine");
   }
 
   /**
@@ -336,6 +479,64 @@ class GlassEffect {
       background: `hsl(0 0% 100% / ${frost})`,
       borderRadius: `${radius}px`,
     });
+
+    this.applyShineEffect();
+  }
+
+  /**
+   * Applies shine effect using gradient or shadow based on shineType
+   */
+  applyShineEffect() {
+    const { intensity, type } = this.config.shine;
+
+    if (intensity === 0) {
+      this.element.style.setProperty("--shine-background", "none");
+      return;
+    }
+
+    if (type === "shadow") {
+      this.applyShadowShine();
+    } else {
+      this.applyGradientShine();
+    }
+  }
+
+  /**
+   * Applies shine using linear gradient
+   */
+  applyGradientShine() {
+    const { angle, intensity, color, spread } = this.config.shine;
+
+    // Create directional linear gradient based on angle
+    const gradientAngle = angle + 90; // Adjust for CSS gradient angle convention
+    const fadeDistance = spread;
+
+    const gradient = `linear-gradient(${gradientAngle}deg, 
+      transparent 0%, 
+      ${color} ${fadeDistance}%, 
+      transparent ${fadeDistance * 2}%)`;
+
+    this.element.style.setProperty("--shine-background", gradient);
+    this.element.style.setProperty("--shine-shadow", "none");
+  }
+
+  /**
+   * Applies shine using box-shadow
+   */
+  applyShadowShine() {
+    const { angle, intensity, color, spread } = this.config.shine;
+
+    // Convert angle to radians and calculate offset direction
+    const angleRad = (angle * Math.PI) / 180;
+    const offsetX = Math.cos(angleRad) * 20 * intensity;
+    const offsetY = Math.sin(angleRad) * 20 * intensity;
+
+    // Create inset box-shadow for directional shine
+    const shadow = `inset ${offsetX}px ${offsetY}px ${spread}px ${color}, 
+            inset ${-offsetX}px ${-offsetY}px ${spread}px ${color}`;
+
+    this.element.style.setProperty("--shine-background", "none");
+    this.element.style.setProperty("--shine-shadow", shadow);
   }
 
   /**
