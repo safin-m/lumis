@@ -30,8 +30,8 @@ export const baseConfig = {
   /** Backdrop blur amount - creates frosted glass effect
    * Formula: backdropBlur * 32 pixels (or backdropBlur * 32 + 12 with overLight)
    * Range: 0-1 (0=no blur, 0.002=very slight, 0.5=strong blur)
-   * Default: 0.2 (moderate frosting) */
-  backdropBlur: 0.2,
+   * Default: 0 (no blur) */
+  backdropBlur: 0,
 
   /** Over-light mode - enhances blur (+12px) and adds extra light overlays
    * Default: false */
@@ -115,7 +115,7 @@ export const baseConfig = {
     extraOverlay: {
       /** Enable extra overlay
        * Default: true */
-      enabled: true,
+      enabled: false,
 
       /** CSS background value - can be gradient, solid color, or image
        * Example: "radial-gradient(circle, rgba(255,0,255,0.4), transparent)"
@@ -210,7 +210,7 @@ export const baseConfig = {
 
     /** CSS color value
      * Default: transparent orange */
-    color: "rgba(255, 221, 153, 0)",
+    color: "rgba(255, 221, 153, 1)",
   },
 
   // ===== Shine Effect =====
