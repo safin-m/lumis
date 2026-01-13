@@ -287,6 +287,9 @@ export class GlassEffect {
     const { overlays } = this.config;
     if (!overlays?.enabled) return;
 
+    const borderColor = overlays?.borderColor || "255, 255, 255, 1";
+    const borderThickness = overlays?.borderThickness || 1.5;
+
     // Two border layers
     if (!this.borderLayer1) {
       this.borderLayer1 = document.createElement("span");
@@ -296,13 +299,12 @@ export class GlassEffect {
         pointerEvents: "none",
         mixBlendMode: "screen",
         opacity: "0.2",
-        padding: "1.5px",
+        padding: `${borderThickness}px`,
         WebkitMask:
           "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
         WebkitMaskComposite: "xor",
         maskComposite: "exclude",
-        boxShadow:
-          "0 0 0 0.5px rgba(255, 255, 255, 0.5) inset, 0 1px 3px rgba(255, 255, 255, 0.25) inset, 0 1px 4px rgba(0, 0, 0, 0.35)",
+        boxShadow: `0 0 0 0.5px rgba(${borderColor}) inset, 0 1px 3px rgba(${borderColor}) inset, 0 1px 4px rgba(0, 0, 0, 0.35)`,
       });
       this.element.appendChild(this.borderLayer1);
     }
@@ -314,18 +316,32 @@ export class GlassEffect {
         inset: "0",
         pointerEvents: "none",
         mixBlendMode: "overlay",
-        padding: "1.5px",
+        padding: `${borderThickness}px`,
         WebkitMask:
           "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
         WebkitMaskComposite: "xor",
         maskComposite: "exclude",
-        boxShadow:
-          "0 0 0 0.5px rgba(255, 255, 255, 0.5) inset, 0 1px 3px rgba(255, 255, 255, 0.25) inset, 0 1px 4px rgba(0, 0, 0, 0.35)",
+        boxShadow: `0 0 0 0.5px rgba(${borderColor}) inset, 0 1px 3px rgba(${borderColor}) inset, 0 1px 4px rgba(0, 0, 0, 0.35)`,
       });
       this.element.appendChild(this.borderLayer2);
     }
 
     // Hover overlay layers
+    const hoverLightAngle = overlays?.hoverLightAngle ?? 0;
+    const hoverLightIntensity = overlays?.hoverLightIntensity ?? 1;
+    const hoverLightColor = overlays?.hoverLightColor || borderColor;
+
+    // Convert angle to gradient position (0° = top, 90° = right, 180° = bottom, 270° = left)
+    const angleRad = (hoverLightAngle * Math.PI) / 180;
+    const x = 50 + 50 * Math.sin(angleRad);
+    const y = 50 - 50 * Math.cos(angleRad);
+
+    // Parse hoverLightColor to extract RGB and apply intensity to alpha
+    const colorParts = hoverLightColor.split(",").map((v) => v.trim());
+    const baseAlpha = parseFloat(colorParts[3] || "1");
+    const intensifiedAlpha = baseAlpha * hoverLightIntensity;
+    const hoverColor = `${colorParts[0]}, ${colorParts[1]}, ${colorParts[2]}, ${intensifiedAlpha}`;
+
     if (!this.hoverOverlay1) {
       this.hoverOverlay1 = document.createElement("div");
       Object.assign(this.hoverOverlay1.style, {
@@ -334,8 +350,7 @@ export class GlassEffect {
         pointerEvents: "none",
         transition: "opacity 0.2s ease-out",
         opacity: "0",
-        backgroundImage:
-          "radial-gradient(circle at 50% 0%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 50%)",
+        backgroundImage: `radial-gradient(circle at ${x}% ${y}%, rgba(${hoverColor}) 0%, rgba(${colorParts[0]}, ${colorParts[1]}, ${colorParts[2]}, 0) 50%)`,
         mixBlendMode: "overlay",
       });
       this.element.appendChild(this.hoverOverlay1);
@@ -349,8 +364,7 @@ export class GlassEffect {
         pointerEvents: "none",
         transition: "opacity 0.2s ease-out",
         opacity: "0",
-        backgroundImage:
-          "radial-gradient(circle at 50% 0%, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 80%)",
+        backgroundImage: `radial-gradient(circle at ${x}% ${y}%, rgba(${hoverColor}) 0%, rgba(${colorParts[0]}, ${colorParts[1]}, ${colorParts[2]}, 0) 80%)`,
         mixBlendMode: "overlay",
       });
       this.element.appendChild(this.hoverOverlay2);

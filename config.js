@@ -7,7 +7,7 @@ export const baseConfig = {
   radius: 16,
   frost: 0,
   saturation: 1,
-  backdropBlur: 0.2, // backdrop blur amount (0-1), creates frosted glass effect
+  backdropBlur: 0, // backdrop blur amount (0-1), creates frosted glass effect
   overLight: false, // enhances blur and adds extra light overlays
 
   // Advanced features (optional, now enabled)
@@ -22,6 +22,11 @@ export const baseConfig = {
   overlays: {
     enabled: true, // multi-layer borders and hover glow
     advancedBorder: true,
+    borderColor: "255, 255, 255, 1", // RGBA values for border color (e.g., "255, 255, 255, 1" for white)
+    borderThickness: 1.5, // Border thickness in pixels
+    hoverLightColor: "255, 255, 255, 1", // RGBA values for hover light color (defaults to borderColor if not set)
+    hoverLightAngle: 0, // Angle of hover light in degrees (0 = top, 90 = right, 180 = bottom, 270 = left)
+    hoverLightIntensity: 1, // Intensity/alpha multiplier for hover light (0-1)
   },
 
   // Displacement map
