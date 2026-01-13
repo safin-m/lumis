@@ -1,0 +1,54 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: radial-gradient(
+      circle at 20% 50%,
+      rgba(255, 0, 150, 0.5) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(0, 150, 255, 0.5) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 20%,
+      rgba(255, 200, 0, 0.5) 0%,
+      transparent 50%
+    ),
+    linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem;
+  color: white;
+}
+
+main {
+  max-width: 1000px;
+  background: url("https://images.pexels.com/photos/1509534/pexels-photo-1509534.jpeg");
+  background-size: contain;
+  position: relative;
+}
+
+/* Example card styles */
+
+.sidebar {
+  padding: 200px;
+  max-width: 250px;
+  position: absolute;
+  top: -300px;
+  left: 200px;
+  z-index: 10;
+}
+
+/* Glass effect base styles (applied by JS) */
+[data-glass-effect] {
+  backdrop-filter: saturate(1);
+  background: hsl(0 0% 100% / 0.05);
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 0.5px hsl(0 0% 100% / 0.5);
+}
