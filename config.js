@@ -7,13 +7,13 @@ export const baseConfig = {
   radius: 16,
   frost: 0,
   saturation: 1,
-  backdropBlur: 0, // backdrop blur amount (0-1), creates frosted glass effect
+  backdropBlur: 0.2, // backdrop blur amount (0-1), creates frosted glass effect
   overLight: false, // enhances blur and adds extra light overlays
 
   // Advanced features (optional, now enabled)
   mode: "standard", // "standard" | "shader" (shader uses CPU-generated liquid displacement)
   edgeMask: false, // enable edge-only aberration masking
-  aberrationIntensity: 5, // edge mask strength when edgeMask is true
+  aberrationIntensity: 2, // edge mask strength when edgeMask is true
   interactions: {
     enabled: true, // elastic mouse interactions
     elasticity: 0.15,
@@ -50,7 +50,7 @@ export const baseConfig = {
   shine: {
     angle: 135,
     intensity: 0.4,
-    color: "hsla(59, 100%, 75%, 0.29)",
+    color: "hsla(0, 100%, 74%, 0.29)",
     spread: 40,
     type: "shadow",
   },
