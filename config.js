@@ -7,6 +7,8 @@ export const baseConfig = {
   radius: 16,
   frost: 0,
   saturation: 1,
+  backdropBlur: 0, // backdrop blur amount (0-1), creates frosted glass effect
+  overLight: false, // enhances blur and adds extra light overlays
 
   // Advanced features (optional, now enabled)
   mode: "standard", // "standard" | "shader" (shader uses CPU-generated liquid displacement)

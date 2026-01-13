@@ -156,9 +156,13 @@ export class GlassEffect {
    */
   applyElementStyles() {
     const { filterId, config } = this;
-    const { saturation, frost, radius } = config;
+    const { saturation, frost, radius, backdropBlur, overLight } = config;
 
-    const backdropFilterValue = `url(#${filterId}) saturate(${saturation})`;
+    // Calculate backdrop blur: base + blurAmount scaled
+    const baseBlur = overLight ? 12 : 4;
+    const blurPx = baseBlur + backdropBlur * 32;
+
+    const backdropFilterValue = `url(#${filterId}) blur(${blurPx}px) saturate(${saturation})`;
 
     Object.assign(this.element.style, {
       WebkitBackdropFilter: backdropFilterValue, // Safari/older Chrome
