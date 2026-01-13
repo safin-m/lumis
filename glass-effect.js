@@ -347,13 +347,19 @@ export class GlassEffect {
     if (borderWidth > 0) {
       // Set default transparent border and transition
       this.element.style.border = `${borderWidth}px solid transparent`;
-      this.element.style.transition = `transform ${duration}s ${easing}, border-color ${duration}s ${easing}`;
+      // Only add transform transition if interactions are disabled
+      const transitionProps = interactionsEnabled
+        ? `border-color ${duration}s ${easing}`
+        : `transform ${duration}s ${easing}, border-color ${duration}s ${easing}`;
+      this.element.style.transition = transitionProps;
 
       // Mouse enter: show border and hover overlays
       this.element.addEventListener("mouseenter", () => {
+        // Only apply scale if interactions are disabled (to avoid conflicts)
         if (!interactionsEnabled && scale !== 1) {
           this.element.style.transform = `scale(${scale})`;
         }
+        // Always show border and hover overlays on mouse enter
         this.element.style.borderColor = borderColor;
         if (this.hoverOverlay1) this.hoverOverlay1.style.opacity = "0.5";
         if (this.hoverOverlay2) this.hoverOverlay2.style.opacity = "0";
@@ -362,20 +368,27 @@ export class GlassEffect {
       // Mouse leave: hide border and overlays
       this.element.addEventListener("mouseleave", () => {
         if (!interactionsEnabled) this.element.style.transform = "";
+        // Always hide border and overlays on mouse leave
         this.element.style.borderColor = "transparent";
         if (this.hoverOverlay1) this.hoverOverlay1.style.opacity = "0";
         if (this.hoverOverlay2) this.hoverOverlay2.style.opacity = "0";
       });
     } else if (scale !== 1) {
       // Only scale, no border
-      this.element.style.transition = `transform ${duration}s ${easing}`;
+      // Only add transform transition if interactions are disabled
+      if (!interactionsEnabled) {
+        this.element.style.transition = `transform ${duration}s ${easing}`;
+      }
       this.element.addEventListener("mouseenter", () => {
+        // Only apply scale if interactions are disabled (to avoid conflicts)
         if (!interactionsEnabled)
           this.element.style.transform = `scale(${scale})`;
+        // Always show hover overlays on mouse enter
         if (this.hoverOverlay1) this.hoverOverlay1.style.opacity = "0.4";
       });
       this.element.addEventListener("mouseleave", () => {
         if (!interactionsEnabled) this.element.style.transform = "";
+        // Always hide hover overlays on mouse leave
         if (this.hoverOverlay1) this.hoverOverlay1.style.opacity = "0";
       });
     }
@@ -678,7 +691,18 @@ export class GlassEffect {
       }
     };
 
+    // Reset transform on mouse leave
+    this.onMouseLeave = () => {
+      this.element.style.transform = "";
+      // Reset border gradients to default
+      if (this.borderLayer1 && this.borderLayer2) {
+        this.borderLayer1.style.background = "";
+        this.borderLayer2.style.background = "";
+      }
+    };
+
     this.element.addEventListener("mousemove", this.onMouseMove);
+    this.element.addEventListener("mouseleave", this.onMouseLeave);
   }
 
   /**
@@ -694,6 +718,8 @@ export class GlassEffect {
     // Remove event listeners
     if (this.onMouseMove)
       this.element.removeEventListener("mousemove", this.onMouseMove);
+    if (this.onMouseLeave)
+      this.element.removeEventListener("mouseleave", this.onMouseLeave);
 
     // Remove SVG filter from DOM
     if (this.svgElement) this.svgElement.remove();

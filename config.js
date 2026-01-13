@@ -256,8 +256,8 @@ export const baseConfig = {
 
     /** Scale multiplier on hover
      * Range: 0.5-2 (1=no change, >1=grow, <1=shrink)
-     * Default: 1.05 */
-    scale: 1.05,
+     * Default: 1. */
+    scale: 1,
 
     /** Transition duration in seconds
      * Default: 0.3 */
