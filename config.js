@@ -111,6 +111,16 @@ export const baseConfig = {
      * Default: 1 */
     hoverLightIntensity: 1,
 
+    /** First hover overlay opacity (tighter gradient)
+     * Range: 0-1 (0=invisible, 1=fully opaque)
+     * Default: 0.5 */
+    hoverOverlay1Opacity: 0.5,
+
+    /** Second hover overlay opacity (wider gradient)
+     * Range: 0-1 (0=invisible, 1=fully opaque)
+     * Default: 0 */
+    hoverOverlay2Opacity: 0,
+
     /** Extra overlay layer - custom gradient or color on top of everything */
     extraOverlay: {
       /** Enable extra overlay

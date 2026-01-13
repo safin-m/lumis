@@ -361,8 +361,14 @@ export class GlassEffect {
         }
         // Always show border and hover overlays on mouse enter
         this.element.style.borderColor = borderColor;
-        if (this.hoverOverlay1) this.hoverOverlay1.style.opacity = "0.5";
-        if (this.hoverOverlay2) this.hoverOverlay2.style.opacity = "0";
+        if (this.hoverOverlay1)
+          this.hoverOverlay1.style.opacity = String(
+            this.config.overlays?.hoverOverlay1Opacity ?? 0.5
+          );
+        if (this.hoverOverlay2)
+          this.hoverOverlay2.style.opacity = String(
+            this.config.overlays?.hoverOverlay2Opacity ?? 0
+          );
       });
 
       // Mouse leave: hide border and overlays
@@ -384,7 +390,10 @@ export class GlassEffect {
         if (!interactionsEnabled)
           this.element.style.transform = `scale(${scale})`;
         // Always show hover overlays on mouse enter
-        if (this.hoverOverlay1) this.hoverOverlay1.style.opacity = "0.4";
+        if (this.hoverOverlay1)
+          this.hoverOverlay1.style.opacity = String(
+            this.config.overlays?.hoverOverlay1Opacity ?? 0.5
+          );
       });
       this.element.addEventListener("mouseleave", () => {
         if (!interactionsEnabled) this.element.style.transform = "";
@@ -442,8 +451,13 @@ export class GlassEffect {
         maskComposite: "exclude",
         // Multi-layered box-shadow for depth
         boxShadow: `0 0 0 0.5px rgba(${borderColor}) inset, 0 1px 3px rgba(${borderColor}) inset, 0 1px 4px rgba(0, 0, 0, 0.35)`,
+        // Match container's border radius
+        borderRadius: `${this.config.radius}px`,
       });
       this.element.appendChild(this.borderLayer1);
+    } else {
+      // Update existing border layer radius
+      this.borderLayer1.style.borderRadius = `${this.config.radius}px`;
     }
 
     // Second border layer with overlay blend mode
@@ -460,8 +474,13 @@ export class GlassEffect {
         WebkitMaskComposite: "xor",
         maskComposite: "exclude",
         boxShadow: `0 0 0 0.5px rgba(${borderColor}) inset, 0 1px 3px rgba(${borderColor}) inset, 0 1px 4px rgba(0, 0, 0, 0.35)`,
+        // Match container's border radius
+        borderRadius: `${this.config.radius}px`,
       });
       this.element.appendChild(this.borderLayer2);
+    } else {
+      // Update existing border layer radius
+      this.borderLayer2.style.borderRadius = `${this.config.radius}px`;
     }
   }
 
@@ -491,6 +510,9 @@ export class GlassEffect {
           borderRadius: `${this.config.radius}px`,
         });
         this.element.appendChild(this.extraOverlay);
+      } else {
+        // Update existing extra overlay radius
+        this.extraOverlay.style.borderRadius = `${this.config.radius}px`;
       }
     } else if (this.extraOverlay) {
       // Remove overlay if disabled
@@ -539,8 +561,13 @@ export class GlassEffect {
         // Radial gradient positioned at calculated x, y coordinates
         backgroundImage: `radial-gradient(circle at ${x}% ${y}%, rgba(${hoverColor}) 0%, rgba(${colorParts[0]}, ${colorParts[1]}, ${colorParts[2]}, 0) 50%)`,
         mixBlendMode: "overlay",
+        // Match container's border radius
+        borderRadius: `${this.config.radius}px`,
       });
       this.element.appendChild(this.hoverOverlay1);
+    } else {
+      // Update existing hover overlay radius
+      this.hoverOverlay1.style.borderRadius = `${this.config.radius}px`;
     }
 
     // Second hover overlay (wider spread)
@@ -555,8 +582,13 @@ export class GlassEffect {
         // Wider gradient (80% spread vs 50%)
         backgroundImage: `radial-gradient(circle at ${x}% ${y}%, rgba(${hoverColor}) 0%, rgba(${colorParts[0]}, ${colorParts[1]}, ${colorParts[2]}, 0) 80%)`,
         mixBlendMode: "overlay",
+        // Match container's border radius
+        borderRadius: `${this.config.radius}px`,
       });
       this.element.appendChild(this.hoverOverlay2);
+    } else {
+      // Update existing hover overlay radius
+      this.hoverOverlay2.style.borderRadius = `${this.config.radius}px`;
     }
   }
 
