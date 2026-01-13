@@ -27,6 +27,13 @@ export const baseConfig = {
     hoverLightColor: "255, 255, 255, 1", // RGBA values for hover light color (defaults to borderColor if not set)
     hoverLightAngle: 0, // Angle of hover light in degrees (0 = top, 90 = right, 180 = bottom, 270 = left)
     hoverLightIntensity: 1, // Intensity/alpha multiplier for hover light (0-1)
+    extraOverlay: {
+      enabled: true, // Enable extra overlay layer on top
+      background:
+        "radial-gradient(circle at center, rgba(128, 0, 128, 0.3) 0%, rgba(255, 0, 255, 0.2) 50%, transparent 100%)", // CSS background (gradient, solid color, etc.)
+      opacity: 1, // Overlay opacity (0-1)
+      blendMode: "overlay", // CSS mix-blend-mode
+    },
   },
 
   // Displacement map

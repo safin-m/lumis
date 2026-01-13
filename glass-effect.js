@@ -369,6 +369,27 @@ export class GlassEffect {
       });
       this.element.appendChild(this.hoverOverlay2);
     }
+
+    // Extra overlay layer (on top of everything)
+    const extraOverlay = overlays?.extraOverlay;
+    if (extraOverlay?.enabled) {
+      if (!this.extraOverlay) {
+        this.extraOverlay = document.createElement("div");
+        Object.assign(this.extraOverlay.style, {
+          position: "absolute",
+          inset: "0",
+          pointerEvents: "none",
+          background: extraOverlay.background || "none",
+          opacity: extraOverlay.opacity ?? 1,
+          mixBlendMode: extraOverlay.blendMode || "overlay",
+          zIndex: "999",
+        });
+        this.element.appendChild(this.extraOverlay);
+      }
+    } else if (this.extraOverlay) {
+      this.extraOverlay.remove();
+      this.extraOverlay = null;
+    }
   }
 
   /**
