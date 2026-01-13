@@ -1,3 +1,4 @@
 node_modules/
 dist/
 *.log
+interactive-demo/node_modules/
