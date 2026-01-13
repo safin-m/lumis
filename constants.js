@@ -6,6 +6,9 @@ export const SELECTORS = {
   GREEN_CHANNEL: ".green-channel",
   BLUE_CHANNEL: ".blue-channel",
   OUTPUT_BLUR: ".output-blur",
+  EDGE_INTENSITY: ".edge-intensity",
+  EDGE_MASK: ".edge-mask",
+  INVERTED_MASK: ".inverted-mask",
 };
 
 // Color transformation matrices for chromatic aberration

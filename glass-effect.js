@@ -17,6 +17,11 @@ export class GlassEffect {
       warp: { ...baseConfig.warp, ...config.warp },
       shine: { ...baseConfig.shine, ...config.shine },
       hover: { ...baseConfig.hover, ...config.hover },
+      interactions: {
+        ...baseConfig.interactions,
+        ...(config.interactions || {}),
+      },
+      overlays: { ...baseConfig.overlays, ...(config.overlays || {}) },
     };
     this.filterId = generateUniqueId();
 
@@ -115,7 +120,10 @@ export class GlassEffect {
 
     const mapBuilder = new DisplacementMapBuilder(this.filterId, this.config);
     const svgString = mapBuilder.build();
-    const dataUri = `data:image/svg+xml,${encodeURIComponent(svgString)}`;
+    // Fix: handle SVG with leading whitespace and shader mode data URLs
+    const dataUri = svgString.trim().startsWith("data:")
+      ? svgString
+      : `data:image/svg+xml,${encodeURIComponent(svgString)}`;
 
     // Cache the result
     this.cachedDisplacementMap = dataUri;
@@ -157,12 +165,14 @@ export class GlassEffect {
       backdropFilter: backdropFilterValue,
       background: `hsl(0 0% 100% / ${frost})`,
       borderRadius: `${radius}px`,
+      position: this.element.style.position || "relative",
       // Performance hints
       willChange: "transform, backdrop-filter",
       contain: "layout style paint",
     });
 
     this.applyShineEffect();
+    this.applyOverlayLayers();
   }
 
   /**
@@ -227,6 +237,7 @@ export class GlassEffect {
   setupHoverEffects() {
     const { borderWidth, borderColor, scale, duration, easing } =
       this.config.hover;
+    const interactionsEnabled = this.config.interactions?.enabled;
 
     if (borderWidth > 0) {
       // Set default border with transparent color
@@ -234,25 +245,109 @@ export class GlassEffect {
       this.element.style.transition = `transform ${duration}s ${easing}, border-color ${duration}s ${easing}`;
 
       this.element.addEventListener("mouseenter", () => {
-        if (scale !== 1) {
+        if (!interactionsEnabled && scale !== 1) {
           this.element.style.transform = `scale(${scale})`;
         }
         this.element.style.borderColor = borderColor;
+        if (this.hoverOverlay1) this.hoverOverlay1.style.opacity = "0.5";
+        if (this.hoverOverlay2) this.hoverOverlay2.style.opacity = "0";
       });
 
       this.element.addEventListener("mouseleave", () => {
-        this.element.style.transform = "";
+        if (!interactionsEnabled) this.element.style.transform = "";
         this.element.style.borderColor = "transparent";
+        if (this.hoverOverlay1) this.hoverOverlay1.style.opacity = "0";
+        if (this.hoverOverlay2) this.hoverOverlay2.style.opacity = "0";
       });
     } else if (scale !== 1) {
       // Only scale, no border
       this.element.style.transition = `transform ${duration}s ${easing}`;
       this.element.addEventListener("mouseenter", () => {
-        this.element.style.transform = `scale(${scale})`;
+        if (!interactionsEnabled)
+          this.element.style.transform = `scale(${scale})`;
+        if (this.hoverOverlay1) this.hoverOverlay1.style.opacity = "0.4";
       });
       this.element.addEventListener("mouseleave", () => {
-        this.element.style.transform = "";
+        if (!interactionsEnabled) this.element.style.transform = "";
+        if (this.hoverOverlay1) this.hoverOverlay1.style.opacity = "0";
       });
+    }
+  }
+
+  /**
+   * Applies optional overlay layers for advanced borders and hover effects
+   */
+  applyOverlayLayers() {
+    const { overlays } = this.config;
+    if (!overlays?.enabled) return;
+
+    // Two border layers
+    if (!this.borderLayer1) {
+      this.borderLayer1 = document.createElement("span");
+      Object.assign(this.borderLayer1.style, {
+        position: "absolute",
+        inset: "0",
+        pointerEvents: "none",
+        mixBlendMode: "screen",
+        opacity: "0.2",
+        padding: "1.5px",
+        WebkitMask:
+          "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+        WebkitMaskComposite: "xor",
+        maskComposite: "exclude",
+        boxShadow:
+          "0 0 0 0.5px rgba(255, 255, 255, 0.5) inset, 0 1px 3px rgba(255, 255, 255, 0.25) inset, 0 1px 4px rgba(0, 0, 0, 0.35)",
+      });
+      this.element.appendChild(this.borderLayer1);
+    }
+
+    if (!this.borderLayer2) {
+      this.borderLayer2 = document.createElement("span");
+      Object.assign(this.borderLayer2.style, {
+        position: "absolute",
+        inset: "0",
+        pointerEvents: "none",
+        mixBlendMode: "overlay",
+        padding: "1.5px",
+        WebkitMask:
+          "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+        WebkitMaskComposite: "xor",
+        maskComposite: "exclude",
+        boxShadow:
+          "0 0 0 0.5px rgba(255, 255, 255, 0.5) inset, 0 1px 3px rgba(255, 255, 255, 0.25) inset, 0 1px 4px rgba(0, 0, 0, 0.35)",
+      });
+      this.element.appendChild(this.borderLayer2);
+    }
+
+    // Hover overlay layers
+    if (!this.hoverOverlay1) {
+      this.hoverOverlay1 = document.createElement("div");
+      Object.assign(this.hoverOverlay1.style, {
+        position: "absolute",
+        inset: "0",
+        pointerEvents: "none",
+        transition: "opacity 0.2s ease-out",
+        opacity: "0",
+        backgroundImage:
+          "radial-gradient(circle at 50% 0%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 50%)",
+        mixBlendMode: "overlay",
+      });
+      this.element.appendChild(this.hoverOverlay1);
+    }
+
+    if (!this.hoverOverlay2) {
+      this.hoverOverlay2 = document.createElement("div");
+      Object.assign(this.hoverOverlay2.style, {
+        position: "absolute",
+        inset: "0",
+        pointerEvents: "none",
+        transition: "opacity 0.2s ease-out",
+        opacity: "0",
+        backgroundImage:
+          "radial-gradient(circle at 50% 0%, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 80%)",
+        mixBlendMode: "overlay",
+      });
+      this.element.appendChild(this.hoverOverlay2);
     }
   }
 
@@ -293,6 +388,72 @@ export class GlassEffect {
    */
   init() {
     this.update();
+    this.setupInteractions();
+  }
+
+  /**
+   * Sets up optional elastic mouse interactions
+   */
+  setupInteractions() {
+    const { interactions } = this.config;
+    if (!interactions?.enabled) return;
+
+    this.onMouseMove = (e) => {
+      const rect = this.element.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const deltaX = e.clientX - centerX;
+      const deltaY = e.clientY - centerY;
+
+      // Elastic translation with activation fade
+      const edgeDistanceX = Math.max(0, Math.abs(deltaX) - rect.width / 2);
+      const edgeDistanceY = Math.max(0, Math.abs(deltaY) - rect.height / 2);
+      const edgeDistance = Math.hypot(edgeDistanceX, edgeDistanceY);
+      const activation = interactions.activationZone || 200;
+      const fade =
+        edgeDistance > activation ? 0 : 1 - edgeDistance / activation;
+
+      const tx = deltaX * (interactions.elasticity || 0.15) * 0.1 * fade;
+      const ty = deltaY * (interactions.elasticity || 0.15) * 0.1 * fade;
+
+      // Directional scaling
+      const dist = Math.hypot(deltaX, deltaY) || 1;
+      const nx = deltaX / dist;
+      const ny = deltaY / dist;
+      const stretch =
+        Math.min(dist / 300, 1) * (interactions.elasticity || 0.15) * fade;
+      const scaleX = Math.max(
+        0.8,
+        1 + Math.abs(nx) * stretch * 0.3 - Math.abs(ny) * stretch * 0.15
+      );
+      const scaleY = Math.max(
+        0.8,
+        1 + Math.abs(ny) * stretch * 0.3 - Math.abs(nx) * stretch * 0.15
+      );
+
+      this.element.style.transform = `translate(${tx}px, ${ty}px) scaleX(${scaleX}) scaleY(${scaleY})`;
+
+      // Update border gradient if overlays are enabled
+      if (this.borderLayer1 && this.borderLayer2) {
+        const offsetX = ((e.clientX - centerX) / rect.width) * 100;
+        const offsetY = ((e.clientY - centerY) / rect.height) * 100;
+        const start = Math.max(10, 33 + offsetY * 0.3);
+        const end = Math.min(90, 66 + offsetY * 0.4);
+        const c1 = 0.12 + Math.abs(offsetX) * 0.008;
+        const c2 = 0.4 + Math.abs(offsetX) * 0.012;
+        const angle = 135 + offsetX * 1.2;
+        const gradient1 = `linear-gradient(${angle}deg, rgba(255,255,255,0) 0%, rgba(255,255,255,${c1}) ${start}%, rgba(255,255,255,${c2}) ${end}%, rgba(255,255,255,0) 100%)`;
+        const gradient2 = `linear-gradient(${angle}deg, rgba(255,255,255,0) 0%, rgba(255,255,255,${
+          c1 + 0.2
+        }) ${start}%, rgba(255,255,255,${
+          c2 + 0.2
+        }) ${end}%, rgba(255,255,255,0) 100%)`;
+        this.borderLayer1.style.background = gradient1;
+        this.borderLayer2.style.background = gradient2;
+      }
+    };
+
+    this.element.addEventListener("mousemove", this.onMouseMove);
   }
 
   /**
@@ -300,6 +461,8 @@ export class GlassEffect {
    */
   destroy() {
     if (this.resizeObserver) this.resizeObserver.disconnect();
+    if (this.onMouseMove)
+      this.element.removeEventListener("mousemove", this.onMouseMove);
     if (this.svgElement) this.svgElement.remove();
     // Clear caches
     this.cachedDisplacementMap = null;

@@ -8,6 +8,20 @@ export const baseConfig = {
   frost: 0,
   saturation: 1,
 
+  // Advanced features (optional, now enabled)
+  mode: "standard", // "standard" | "shader" (shader uses CPU-generated liquid displacement)
+  edgeMask: false, // enable edge-only aberration masking
+  aberrationIntensity: 5, // edge mask strength when edgeMask is true
+  interactions: {
+    enabled: true, // elastic mouse interactions
+    elasticity: 0.15,
+    activationZone: 200,
+  },
+  overlays: {
+    enabled: true, // multi-layer borders and hover glow
+    advancedBorder: true,
+  },
+
   // Displacement map
   border: 0.07,
   lightness: 50,
