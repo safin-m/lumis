@@ -32,7 +32,7 @@ export const baseConfig = {
       background:
         "radial-gradient(circle at center, rgba(128, 0, 128, 0.3) 0%, rgba(255, 0, 255, 0.2) 50%, transparent 100%)", // CSS background (gradient, solid color, etc.)
       opacity: 1, // Overlay opacity (0-1)
-      blendMode: "overlay", // CSS mix-blend-mode
+      blendMode: "color", // CSS mix-blend-mode (color, hue, saturation, overlay, screen, etc.)
     },
   },
 

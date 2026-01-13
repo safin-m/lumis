@@ -326,6 +326,27 @@ export class GlassEffect {
       this.element.appendChild(this.borderLayer2);
     }
 
+    // Extra overlay layer (positioned to blend with borders)
+    const extraOverlay = overlays?.extraOverlay;
+    if (extraOverlay?.enabled) {
+      if (!this.extraOverlay) {
+        this.extraOverlay = document.createElement("div");
+        Object.assign(this.extraOverlay.style, {
+          position: "absolute",
+          inset: "0",
+          pointerEvents: "none",
+          background: extraOverlay.background || "none",
+          opacity: extraOverlay.opacity ?? 1,
+          mixBlendMode: extraOverlay.blendMode || "color",
+          borderRadius: `${this.config.radius}px`,
+        });
+        this.element.appendChild(this.extraOverlay);
+      }
+    } else if (this.extraOverlay) {
+      this.extraOverlay.remove();
+      this.extraOverlay = null;
+    }
+
     // Hover overlay layers
     const hoverLightAngle = overlays?.hoverLightAngle ?? 0;
     const hoverLightIntensity = overlays?.hoverLightIntensity ?? 1;
@@ -368,27 +389,6 @@ export class GlassEffect {
         mixBlendMode: "overlay",
       });
       this.element.appendChild(this.hoverOverlay2);
-    }
-
-    // Extra overlay layer (on top of everything)
-    const extraOverlay = overlays?.extraOverlay;
-    if (extraOverlay?.enabled) {
-      if (!this.extraOverlay) {
-        this.extraOverlay = document.createElement("div");
-        Object.assign(this.extraOverlay.style, {
-          position: "absolute",
-          inset: "0",
-          pointerEvents: "none",
-          background: extraOverlay.background || "none",
-          opacity: extraOverlay.opacity ?? 1,
-          mixBlendMode: extraOverlay.blendMode || "overlay",
-          zIndex: "999",
-        });
-        this.element.appendChild(this.extraOverlay);
-      }
-    } else if (this.extraOverlay) {
-      this.extraOverlay.remove();
-      this.extraOverlay = null;
     }
   }
 
