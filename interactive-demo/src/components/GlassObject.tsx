@@ -58,16 +58,13 @@ export function GlassObject({
     // Hover borderColor already CSS; leave other hover props as-is
   });
 
-  // Recreate glass effect when any interactions config changes
+  // Recreate glass effect when interactions or edge mask settings change
   useEffect(() => {
     const element = glassRef.current;
     if (!element) return;
 
     // Remove all child nodes except the React content (text, etc.)
-    // Only remove nodes that are not the first child (which is the React content)
-    // If you want to keep all React children, remove all non-React nodes
     Array.from(element.children).forEach((child) => {
-      // Only remove nodes that have pointerEvents none (all overlays set this)
       if (
         child instanceof HTMLElement &&
         child.style.pointerEvents === "none"
@@ -100,6 +97,10 @@ export function GlassObject({
     config.interactions.enabled,
     config.interactions.elasticity,
     config.interactions.activationZone,
+    config.edgeMask,
+    config.edgeMaskPreserveDistortion,
+    config.edgeMaskArithmeticBlend,
+    config.aberrationIntensity,
   ]);
 
   // Update config when it changes

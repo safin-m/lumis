@@ -323,6 +323,14 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
                     />
                   </div>
                 </div>
+                <SliderControl
+                  label="Aberration Intensity"
+                  value={config.aberrationIntensity}
+                  onChange={(v) => updateConfig({ aberrationIntensity: v })}
+                  min={0}
+                  max={10}
+                  step={0.01}
+                />
               </>
             )}
             <SliderControl
