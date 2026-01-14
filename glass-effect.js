@@ -403,7 +403,8 @@ export class GlassEffect {
           this.element.style.transform = `scale(${scale})`;
         }
         // Always show border and hover overlays on mouse enter
-        this.element.style.borderColor = borderColor;
+        // Use rgba() for valid CSS color
+        this.element.style.borderColor = `rgba(${borderColor})`;
         if (this.hoverOverlay1)
           this.hoverOverlay1.style.opacity = String(
             this.config.overlays?.hoverOverlay1Opacity ?? 0.5
