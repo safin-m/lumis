@@ -172,13 +172,53 @@ export class GlassEffect {
    * @returns {string} Data URI of the displacement map SVG
    */
   buildDisplacementMap() {
-    const { width, height } = this.config;
+    const {
+      width,
+      height,
+      scale,
+      r,
+      g,
+      b,
+      blur,
+      lightness,
+      alpha,
+      border,
+      blend,
+      displace,
+      warp,
+      edgeMask,
+      edgeMaskPreserveDistortion,
+      edgeMaskArithmeticBlend,
+      aberrationIntensity,
+      mode,
+    } = this.config;
 
-    // Return cached map if dimensions haven't changed
+    // Cache key includes all parameters that affect the displacement map appearance
+    const cacheKey = JSON.stringify({
+      width,
+      height,
+      scale,
+      r,
+      g,
+      b,
+      blur,
+      lightness,
+      alpha,
+      border,
+      blend,
+      displace,
+      warp,
+      edgeMask,
+      edgeMaskPreserveDistortion,
+      edgeMaskArithmeticBlend,
+      aberrationIntensity,
+      mode,
+    });
+
+    // Return cached map if config hash hasn't changed
     if (
       this.cachedDisplacementMap &&
-      this.cachedDimensions.width === width &&
-      this.cachedDimensions.height === height
+      this.cachedDisplacementMapKey === cacheKey
     ) {
       return this.cachedDisplacementMap;
     }
@@ -191,9 +231,9 @@ export class GlassEffect {
       ? svgString
       : `data:image/svg+xml,${encodeURIComponent(svgString)}`;
 
-    // Cache the result for next time
+    // Cache the result and its key for next time
     this.cachedDisplacementMap = dataUri;
-    this.cachedDimensions = { width, height };
+    this.cachedDisplacementMapKey = cacheKey;
 
     return dataUri;
   }
@@ -436,6 +476,7 @@ export class GlassEffect {
   createBorderLayers(overlays) {
     const borderColor = overlays?.borderColor || "255, 255, 255, 1";
     const borderThickness = overlays?.borderThickness || 1.5;
+    const boxShadowValue = `0 0 0 0.5px rgba(${borderColor}) inset, 0 1px 3px rgba(${borderColor}) inset, 0 1px 4px rgba(0, 0, 0, 0.35)`;
 
     // First border layer with screen blend mode
     if (!this.borderLayer1) {
@@ -453,13 +494,15 @@ export class GlassEffect {
         WebkitMaskComposite: "xor",
         maskComposite: "exclude",
         // Multi-layered box-shadow for depth
-        boxShadow: `0 0 0 0.5px rgba(${borderColor}) inset, 0 1px 3px rgba(${borderColor}) inset, 0 1px 4px rgba(0, 0, 0, 0.35)`,
+        boxShadow: boxShadowValue,
         // Match container's border radius
         borderRadius: `${this.config.radius}px`,
       });
       this.element.appendChild(this.borderLayer1);
     } else {
-      // Update existing border layer radius
+      // Update existing border layer with all properties
+      this.borderLayer1.style.padding = `${borderThickness}px`;
+      this.borderLayer1.style.boxShadow = boxShadowValue;
       this.borderLayer1.style.borderRadius = `${this.config.radius}px`;
     }
 
@@ -476,13 +519,15 @@ export class GlassEffect {
           "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
         WebkitMaskComposite: "xor",
         maskComposite: "exclude",
-        boxShadow: `0 0 0 0.5px rgba(${borderColor}) inset, 0 1px 3px rgba(${borderColor}) inset, 0 1px 4px rgba(0, 0, 0, 0.35)`,
+        boxShadow: boxShadowValue,
         // Match container's border radius
         borderRadius: `${this.config.radius}px`,
       });
       this.element.appendChild(this.borderLayer2);
     } else {
-      // Update existing border layer radius
+      // Update existing border layer with all properties
+      this.borderLayer2.style.padding = `${borderThickness}px`;
+      this.borderLayer2.style.boxShadow = boxShadowValue;
       this.borderLayer2.style.borderRadius = `${this.config.radius}px`;
     }
   }
@@ -514,7 +559,11 @@ export class GlassEffect {
         });
         this.element.appendChild(this.extraOverlay);
       } else {
-        // Update existing extra overlay radius
+        // Update existing extra overlay with all properties
+        this.extraOverlay.style.background = extraOverlay.background || "none";
+        this.extraOverlay.style.opacity = String(extraOverlay.opacity ?? 1);
+        this.extraOverlay.style.mixBlendMode =
+          extraOverlay.blendMode || "color";
         this.extraOverlay.style.borderRadius = `${this.config.radius}px`;
       }
     } else if (this.extraOverlay) {
@@ -551,6 +600,8 @@ export class GlassEffect {
     const baseAlpha = parseFloat(colorParts[3] || "1");
     const intensifiedAlpha = baseAlpha * hoverLightIntensity;
     const hoverColor = `${colorParts[0]}, ${colorParts[1]}, ${colorParts[2]}, ${intensifiedAlpha}`;
+    const gradient1 = `radial-gradient(circle at ${x}% ${y}%, rgba(${hoverColor}) 0%, rgba(${colorParts[0]}, ${colorParts[1]}, ${colorParts[2]}, 0) 50%)`;
+    const gradient2 = `radial-gradient(circle at ${x}% ${y}%, rgba(${hoverColor}) 0%, rgba(${colorParts[0]}, ${colorParts[1]}, ${colorParts[2]}, 0) 80%)`;
 
     // First hover overlay (tighter gradient)
     if (!this.hoverOverlay1) {
@@ -562,14 +613,15 @@ export class GlassEffect {
         transition: "opacity 0.2s ease-out",
         opacity: "0",
         // Radial gradient positioned at calculated x, y coordinates
-        backgroundImage: `radial-gradient(circle at ${x}% ${y}%, rgba(${hoverColor}) 0%, rgba(${colorParts[0]}, ${colorParts[1]}, ${colorParts[2]}, 0) 50%)`,
+        backgroundImage: gradient1,
         mixBlendMode: "overlay",
         // Match container's border radius
         borderRadius: `${this.config.radius}px`,
       });
       this.element.appendChild(this.hoverOverlay1);
     } else {
-      // Update existing hover overlay radius
+      // Update existing hover overlay with all properties
+      this.hoverOverlay1.style.backgroundImage = gradient1;
       this.hoverOverlay1.style.borderRadius = `${this.config.radius}px`;
     }
 
@@ -583,14 +635,15 @@ export class GlassEffect {
         transition: "opacity 0.2s ease-out",
         opacity: "0",
         // Wider gradient (80% spread vs 50%)
-        backgroundImage: `radial-gradient(circle at ${x}% ${y}%, rgba(${hoverColor}) 0%, rgba(${colorParts[0]}, ${colorParts[1]}, ${colorParts[2]}, 0) 80%)`,
+        backgroundImage: gradient2,
         mixBlendMode: "overlay",
         // Match container's border radius
         borderRadius: `${this.config.radius}px`,
       });
       this.element.appendChild(this.hoverOverlay2);
     } else {
-      // Update existing hover overlay radius
+      // Update existing hover overlay with all properties
+      this.hoverOverlay2.style.backgroundImage = gradient2;
       this.hoverOverlay2.style.borderRadius = `${this.config.radius}px`;
     }
   }
