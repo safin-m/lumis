@@ -458,7 +458,7 @@ export class GlassEffect {
    */
   applyOverlayLayers() {
     const { overlays } = this.config;
-    
+
     // If overlays are disabled, remove all overlay elements
     if (!overlays?.enabled) {
       this.removeBorderLayers();

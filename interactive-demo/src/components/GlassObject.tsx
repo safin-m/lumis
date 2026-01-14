@@ -87,9 +87,18 @@ export function GlassObject({
       glassEffectRef.current.config = {
         ...glassEffectRef.current.config,
         ...configWithCssColors,
-        warp: { ...glassEffectRef.current.config.warp, ...configWithCssColors.warp },
-        shine: { ...glassEffectRef.current.config.shine, ...configWithCssColors.shine },
-        hover: { ...glassEffectRef.current.config.hover, ...configWithCssColors.hover },
+        warp: {
+          ...glassEffectRef.current.config.warp,
+          ...configWithCssColors.warp,
+        },
+        shine: {
+          ...glassEffectRef.current.config.shine,
+          ...configWithCssColors.shine,
+        },
+        hover: {
+          ...glassEffectRef.current.config.hover,
+          ...configWithCssColors.hover,
+        },
         interactions: {
           ...glassEffectRef.current.config.interactions,
           ...configWithCssColors.interactions,
