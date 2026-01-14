@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import * as Popover from "@radix-ui/react-popover";
 import { X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface ColorPickerCustomProps {
   label: string;
@@ -110,6 +110,8 @@ export function ColorPickerCustom({
   const prevValueRef = useRef(value);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
 
   // Extract rgba values from multiple formats
   const getRgbaValues = (color: string) => {
@@ -153,27 +155,40 @@ export function ColorPickerCustom({
     setAlpha(a);
   }, [value]);
 
-  // Update canvas when hue changes
+  // Update canvas when hue changes or when the picker opens
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !containerRef.current) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const width = canvas.width;
-    const height = canvas.height;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(1, Math.floor(rect.width * dpr));
+    const height = Math.max(1, Math.floor(rect.height * dpr));
+
+    // resize canvas to match display size for sharpness
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
 
     // Draw saturation/lightness gradient
-    for (let x = 0; x < width; x++) {
-      for (let y = 0; y < height; y++) {
+    const imgData = ctx.createImageData(width, height);
+    let p = 0;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
         const s = (x / width) * 100;
         const l = 100 - (y / height) * 100;
         const { r, g, b } = hslaToRgba(hue, s, l, 1);
-        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-        ctx.fillRect(x, y, 1, 1);
+        imgData.data[p++] = r;
+        imgData.data[p++] = g;
+        imgData.data[p++] = b;
+        imgData.data[p++] = 255;
       }
     }
-  }, [hue]);
+    ctx.putImageData(imgData, 0, 0);
+  }, [hue, isOpen]);
 
   // Handle canvas click for color selection
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {

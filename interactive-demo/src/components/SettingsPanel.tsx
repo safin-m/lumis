@@ -7,9 +7,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import type { DemoConfig } from "@/types/glass-config";
 import { ChevronDown, ChevronUp, Settings } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { ColorPickerCustom } from "./ColorPickerCustom";
 
 interface SettingsPanelProps {
@@ -168,13 +169,12 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-white">Show Lorem Ipsum</Label>
-                <input
-                  type="checkbox"
+                <Switch
                   checked={config.showLoremIpsum}
                   onChange={(e) =>
                     updateConfig({ showLoremIpsum: e.target.checked })
                   }
-                  className="h-4 w-4 rounded border-white/20 bg-white/5"
+                  className="h-6 w-11"
                 />
               </div>
             </div>
@@ -234,24 +234,22 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-white">Over Light</Label>
-                <input
-                  type="checkbox"
+                <Switch
                   checked={config.overLight}
                   onChange={(e) =>
                     updateConfig({ overLight: e.target.checked })
                   }
-                  className="h-4 w-4 rounded border-white/20 bg-white/5"
+                  className="h-6 w-11"
                 />
               </div>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-white">Edge Mask</Label>
-                <input
-                  type="checkbox"
+                <Switch
                   checked={config.edgeMask}
                   onChange={(e) => updateConfig({ edgeMask: e.target.checked })}
-                  className="h-4 w-4 rounded border-white/20 bg-white/5"
+                  className="h-6 w-11"
                 />
               </div>
             </div>
@@ -262,15 +260,14 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
                     <Label className="text-white text-sm">
                       Preserve Center Distortion
                     </Label>
-                    <input
-                      type="checkbox"
+                    <Switch
                       checked={config.edgeMaskPreserveDistortion}
                       onChange={(e) =>
                         updateConfig({
                           edgeMaskPreserveDistortion: e.target.checked,
                         })
                       }
-                      className="h-4 w-4 rounded border-white/20 bg-white/5"
+                      className="h-6 w-11"
                     />
                   </div>
                 </div>
@@ -279,15 +276,14 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
                     <Label className="text-white text-sm">
                       Arithmetic Blend (Experimental)
                     </Label>
-                    <input
-                      type="checkbox"
+                    <Switch
                       checked={config.edgeMaskArithmeticBlend}
                       onChange={(e) =>
                         updateConfig({
                           edgeMaskArithmeticBlend: e.target.checked,
                         })
                       }
-                      className="h-4 w-4 rounded border-white/20 bg-white/5"
+                      className="h-6 w-11"
                     />
                   </div>
                 </div>
@@ -328,30 +324,28 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-white">Enabled</Label>
-                <input
-                  type="checkbox"
+                <Switch
                   checked={config.overlays.enabled}
                   onChange={(e) =>
                     updateNestedConfig("overlays", {
                       enabled: e.target.checked,
                     })
                   }
-                  className="h-4 w-4 rounded border-white/20 bg-white/5"
+                  className="h-6 w-11"
                 />
               </div>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-white">Advanced Border</Label>
-                <input
-                  type="checkbox"
+                <Switch
                   checked={config.overlays.advancedBorder}
                   onChange={(e) =>
                     updateNestedConfig("overlays", {
                       advancedBorder: e.target.checked,
                     })
                   }
-                  className="h-4 w-4 rounded border-white/20 bg-white/5"
+                  className="h-6 w-11"
                 />
               </div>
             </div>
