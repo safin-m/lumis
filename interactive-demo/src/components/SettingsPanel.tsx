@@ -341,6 +341,44 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
                 />
               </div>
             </div>
+            {config.edgeMask && (
+              <>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-white text-sm">
+                      Preserve Center Distortion
+                    </Label>
+                    <input
+                      type="checkbox"
+                      checked={config.edgeMaskPreserveDistortion}
+                      onChange={(e) =>
+                        updateConfig({
+                          edgeMaskPreserveDistortion: e.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 rounded border-white/20 bg-white/5"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-white text-sm">
+                      Arithmetic Blend (Experimental)
+                    </Label>
+                    <input
+                      type="checkbox"
+                      checked={config.edgeMaskArithmeticBlend}
+                      onChange={(e) =>
+                        updateConfig({
+                          edgeMaskArithmeticBlend: e.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 rounded border-white/20 bg-white/5"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
             <SliderControl
               label="Radius"
               value={config.radius}

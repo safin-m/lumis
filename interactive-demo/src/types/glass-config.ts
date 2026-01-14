@@ -7,6 +7,8 @@ export interface GlassConfig {
   overLight: boolean;
   mode: "standard" | "shader";
   edgeMask: boolean;
+  edgeMaskPreserveDistortion: boolean;
+  edgeMaskArithmeticBlend: boolean;
   aberrationIntensity: number;
 
   interactions: {

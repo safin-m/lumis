@@ -31,6 +31,7 @@ export class SVGFilterBuilder {
    * @param {number} config.b - Blue channel offset
    * @param {number} config.displace - Output blur amount
    * @param {boolean} config.edgeMask - Enable edge-only aberration
+   * @param {boolean} config.edgeMaskPreserveDistortion - Keep center distortion with edge mask
    * @param {number} config.aberrationIntensity - Edge mask strength (2-10)
    * @param {string} config.mode - "standard" or "shader"
    */
@@ -178,24 +179,44 @@ export class SVGFilterBuilder {
             0.1,
             0.5 - aberrationIntensity * 0.1
           )}" result="aberratedBlurred"/>
-          <!-- Composite aberration with edge mask (only keeps edges) -->
-          <feComposite in="aberratedBlurred" in2="edgeMask" operator="in" result="edgeAberration"/>
           
-          <!-- Inverted mask for center area (no aberration) -->
+          <!-- Composite aberration with edge mask -->
+          <feComposite in="aberratedBlurred" in2="edgeMask" operator="${
+            this.config.edgeMaskArithmeticBlend
+              ? 'arithmetic" k1="0" k2="1" k3="0" k4="0'
+              : "in"
+          }" result="edgeAberration"/>
+          
+          <!-- Inverted mask for center area -->
           <feComponentTransfer in="edgeMask" result="invertedMask" class="${SELECTORS.INVERTED_MASK.slice(
             1
           )}">
             <feFuncA type="table" tableValues="1 0"/>
           </feComponentTransfer>
           
-          <!-- Create non-displaced center using the first channel (red) as base -->
-          <feDisplacementMap in="SourceGraphic" in2="map" scale="0" result="centerBase"/>
+          <!-- Create center: use distorted rgb if preserving, else undistorted source -->
+          ${
+            this.config.edgeMaskPreserveDistortion
+              ? `<!-- Use distorted result for center -->`
+              : `<!-- Use undistorted source for center -->
+          <feDisplacementMap in="SourceGraphic" in2="map" scale="0" xChannelSelector="${this.config.x}" yChannelSelector="${this.config.y}" result="centerUndistorted"/>`
+          }
           
-          <!-- Apply inverted mask to get clean center -->
-          <feComposite in="centerBase" in2="invertedMask" operator="in" result="centerClean"/>
+          <!-- Apply inverted mask to center -->
+          <feComposite in="${
+            this.config.edgeMaskPreserveDistortion ? "rgb" : "centerUndistorted"
+          }" in2="invertedMask" operator="${
+                  this.config.edgeMaskArithmeticBlend
+                    ? 'arithmetic" k1="0" k2="1" k3="0" k4="0'
+                    : "in"
+                }" result="centerClean"/>
           
-          <!-- Combine aberrated edges over clean center -->
-          <feComposite in="edgeAberration" in2="centerClean" operator="over" result="output"/>
+          <!-- Combine edges and center -->
+          <feComposite in="edgeAberration" in2="centerClean" operator="${
+            this.config.edgeMaskArithmeticBlend
+              ? 'arithmetic" k1="0" k2="1" k3="1" k4="0'
+              : "over"
+          }" result="output"/>
           `
               : `
           <!-- Standard mode: apply blur to smooth final result -->

@@ -31,7 +31,7 @@ export const baseConfig = {
    * Formula: backdropBlur * 32 pixels (or backdropBlur * 32 + 12 with overLight)
    * Range: 0-1 (0=no blur, 0.002=very slight, 0.5=strong blur)
    * Default: 0 (no blur) */
-  backdropBlur: 0,
+  backdropBlur: 1,
 
   /** Over-light mode - enhances blur (+12px) and adds extra light overlays
    * Default: false */
@@ -48,8 +48,17 @@ export const baseConfig = {
   /** Edge mask - applies chromatic aberration only at edges
    * Keeps center clean and sharp, useful for readable content
    * Default: false */
-  edgeMask: false,
+  edgeMask: true,
 
+  /** Preserve center distortion when using edge mask
+   * When true, the center retains the displacement effect
+   * When false, only edges have aberration and center stays undistorted
+   * Default: false */
+  edgeMaskPreserveDistortion: true,
+  /** Use arithmetic blending for edge mask compositing
+   * Creates a unique additive effect, experimental
+   * Default: false */
+  edgeMaskArithmeticBlend: false,
   /** Edge mask strength - controls how much aberration at edges
    * Range: 2-10 (higher = stronger edge effect)
    * Default: 2 */

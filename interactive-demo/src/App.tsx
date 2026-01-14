@@ -12,6 +12,8 @@ const initialConfig: DemoConfig = {
   overLight: false,
   mode: "standard",
   edgeMask: false,
+  edgeMaskPreserveDistortion: false,
+  edgeMaskArithmeticBlend: false,
   aberrationIntensity: 2,
 
   interactions: {
