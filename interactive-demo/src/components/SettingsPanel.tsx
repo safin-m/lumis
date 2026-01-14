@@ -557,15 +557,11 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
               max={10}
               step={0.5}
             />
-            <div className="space-y-2">
-              <Label className="text-white">Border Color</Label>
-              <Input
-                value={config.hover.borderColor}
-                onChange={(e) =>
-                  updateNestedConfig("hover", { borderColor: e.target.value })
-                }
-              />
-            </div>
+            <ColorPickerCustom
+              label="Border Color"
+              value={config.hover.borderColor}
+              onChange={(v) => updateNestedConfig("hover", { borderColor: v })}
+            />
             <SliderControl
               label="Scale"
               value={config.hover.scale}
