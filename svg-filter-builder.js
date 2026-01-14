@@ -187,8 +187,12 @@ export class SVGFilterBuilder {
           )}">
             <feFuncA type="table" tableValues="1 0"/>
           </feComponentTransfer>
-          <!-- Composite clean source with inverted mask (keeps center sharp) -->
-          <feComposite in="SourceGraphic" in2="invertedMask" operator="in" result="centerClean"/>
+          
+          <!-- Create non-displaced center using the first channel (red) as base -->
+          <feDisplacementMap in="SourceGraphic" in2="map" scale="0" result="centerBase"/>
+          
+          <!-- Apply inverted mask to get clean center -->
+          <feComposite in="centerBase" in2="invertedMask" operator="in" result="centerClean"/>
           
           <!-- Combine aberrated edges over clean center -->
           <feComposite in="edgeAberration" in2="centerClean" operator="over" result="output"/>

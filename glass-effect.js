@@ -218,7 +218,10 @@ export class GlassEffect {
     this.blueChannel.setAttribute("scale", scale + b);
 
     // Set output blur amount for smoothing the displaced result
-    this.outputBlur.setAttribute("stdDeviation", displace);
+    // Only exists when edgeMask is disabled
+    if (this.outputBlur) {
+      this.outputBlur.setAttribute("stdDeviation", displace);
+    }
   }
 
   /**
