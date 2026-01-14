@@ -785,14 +785,18 @@ export class GlassEffect {
       const deltaX = e.clientX - centerX;
       const deltaY = e.clientY - centerY;
 
-      // Calculate distance from edge for activation fade
-      const edgeDistanceX = Math.max(0, Math.abs(deltaX) - rect.width / 2);
-      const edgeDistanceY = Math.max(0, Math.abs(deltaY) - rect.height / 2);
-      const edgeDistance = Math.hypot(edgeDistanceX, edgeDistanceY);
-      const activation = interactions.activationZone || 200;
-      // Fade from 1 (at edge) to 0 (at activation distance)
-      const fade =
-        edgeDistance > activation ? 0 : 1 - edgeDistance / activation;
+      // Calculate minimum distance from mouse to edge (inside element)
+      const dx = Math.max(0, rect.width / 2 - Math.abs(deltaX));
+      const dy = Math.max(0, rect.height / 2 - Math.abs(deltaY));
+      const minDistToEdge = Math.min(dx, dy);
+      const activation = interactions.activationZone ?? 200;
+      // Fade from 1 (center) to 0 (at edge or within activation zone)
+      let fade = 0;
+      if (activation > 0) {
+        fade = minDistToEdge > activation ? 1 : minDistToEdge / activation;
+      } else {
+        fade = 0; // If activation zone is 0 or less, disable effect
+      }
 
       // Elastic translation: mouse delta * elasticity * fade
       const tx = deltaX * (interactions.elasticity || 0.15) * 0.1 * fade;
@@ -877,6 +881,11 @@ export class GlassEffect {
       this.element.removeEventListener("mousemove", this.onMouseMove);
     if (this.onMouseLeave)
       this.element.removeEventListener("mouseleave", this.onMouseLeave);
+
+    // Remove all overlay layers to prevent stacking
+    this.removeBorderLayers && this.removeBorderLayers();
+    this.removeExtraOverlay && this.removeExtraOverlay();
+    this.removeHoverOverlays && this.removeHoverOverlays();
 
     // Remove SVG filter from DOM
     if (this.svgElement) this.svgElement.remove();

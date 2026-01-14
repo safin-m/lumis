@@ -58,26 +58,49 @@ export function GlassObject({
     // Hover borderColor already CSS; leave other hover props as-is
   });
 
-  // Initialize glass effect once
+  // Recreate glass effect when any interactions config changes
   useEffect(() => {
     const element = glassRef.current;
     if (!element) return;
 
+    // Remove all child nodes except the React content (text, etc.)
+    // Only remove nodes that are not the first child (which is the React content)
+    // If you want to keep all React children, remove all non-React nodes
+    Array.from(element.children).forEach((child) => {
+      // Only remove nodes that have pointerEvents none (all overlays set this)
+      if (
+        child instanceof HTMLElement &&
+        child.style.pointerEvents === "none"
+      ) {
+        element.removeChild(child);
+      }
+    });
+
     const configWithCssColors = withCssColors(config);
 
+    let destroyed = false;
     // Import and initialize glass effect dynamically
     // @ts-expect-error - glass-effect is a plain JS module
     import("../../../dist/glass-effect.esm.js").then((module: any) => {
+      if (destroyed) return;
       const GlassEffect = module.GlassEffect;
+      if (glassEffectRef.current?.destroy) {
+        glassEffectRef.current.destroy();
+      }
       glassEffectRef.current = new GlassEffect(element, configWithCssColors);
     });
 
     return () => {
+      destroyed = true;
       if (glassEffectRef.current?.destroy) {
         glassEffectRef.current.destroy();
       }
     };
-  }, []);
+  }, [
+    config.interactions.enabled,
+    config.interactions.elasticity,
+    config.interactions.activationZone,
+  ]);
 
   // Update config when it changes
   useEffect(() => {

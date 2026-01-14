@@ -119,6 +119,42 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
 
       {!isCollapsed && (
         <div className="p-4 max-h-[80vh] overflow-y-auto space-y-4">
+          <Section title="Interactions" defaultOpen>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-white">Elastic Interactions</Label>
+                <Switch
+                  checked={config.interactions.enabled}
+                  onChange={(e) =>
+                    updateNestedConfig("interactions", {
+                      enabled: e.target.checked,
+                    })
+                  }
+                  className="h-6 w-11"
+                />
+              </div>
+            </div>
+            <SliderControl
+              label="Elasticity"
+              value={config.interactions.elasticity}
+              onChange={(v) =>
+                updateNestedConfig("interactions", { elasticity: v })
+              }
+              min={0}
+              max={1}
+              step={0.01}
+            />
+            <SliderControl
+              label="Activation Zone"
+              value={config.interactions.activationZone}
+              onChange={(v) =>
+                updateNestedConfig("interactions", { activationZone: v })
+              }
+              min={0}
+              max={500}
+              step={1}
+            />
+          </Section>
           <Section title="Dimensions" defaultOpen>
             <SliderControl
               label="Width"
