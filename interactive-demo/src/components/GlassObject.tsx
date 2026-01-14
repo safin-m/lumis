@@ -17,16 +17,58 @@ export function GlassObject({
   const isDragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
 
+  // Normalize color strings to valid CSS so the library gets usable values
+  const toCssColor = (val: string) => {
+    const trimmed = (val || "").trim();
+    if (!trimmed) return trimmed;
+
+    const lower = trimmed.toLowerCase();
+    const looksLikeCss =
+      lower.startsWith("#") ||
+      lower.startsWith("rgb") ||
+      lower.startsWith("hsl") ||
+      lower.startsWith("var(") ||
+      lower.includes("gradient");
+
+    if (looksLikeCss) return trimmed;
+
+    // Matches "R, G, B" or "R, G, B, A"
+    const rgbaList = /^\d+\s*,\s*\d+\s*,\s*\d+(\s*,\s*[\d.]+)?$/;
+    if (rgbaList.test(trimmed)) return `rgba(${trimmed})`;
+
+    return trimmed; // Fallback: leave as-is
+  };
+
+  const withCssColors = (cfg: DemoConfig): DemoConfig => ({
+    ...cfg,
+    overlays: {
+      ...cfg.overlays,
+      borderColor: toCssColor(cfg.overlays.borderColor),
+      hoverLightColor: toCssColor(cfg.overlays.hoverLightColor),
+    },
+    warp: {
+      ...cfg.warp,
+      color: toCssColor(cfg.warp.color),
+    },
+    shine: {
+      ...cfg.shine,
+      color: toCssColor(cfg.shine.color),
+    },
+    // Hover borderColor already CSS; leave other hover props as-is
+  });
+
   // Initialize glass effect once
   useEffect(() => {
     const element = glassRef.current;
     if (!element) return;
 
+    const configWithCssColors = withCssColors(config);
+
     // Import and initialize glass effect dynamically
     // @ts-expect-error - glass-effect is a plain JS module
     import("../../../dist/glass-effect.esm.js").then((module: any) => {
       const GlassEffect = module.GlassEffect;
-      glassEffectRef.current = new GlassEffect(element, config);
+      glassEffectRef.current = new GlassEffect(element, configWithCssColors);
     });
 
     return () => {
@@ -39,7 +81,8 @@ export function GlassObject({
   // Update config when it changes
   useEffect(() => {
     if (glassEffectRef.current) {
-      Object.assign(glassEffectRef.current.config, config);
+      const configWithCssColors = withCssColors(config);
+      Object.assign(glassEffectRef.current.config, configWithCssColors);
       glassEffectRef.current.update();
     }
   }, [config]);

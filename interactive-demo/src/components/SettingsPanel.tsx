@@ -9,98 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import type { DemoConfig } from "@/types/glass-config";
 import { ChevronDown, ChevronUp, Settings } from "lucide-react";
-import { useState } from "react";
-import { HexColorPicker } from "react-colorful";
+import { useEffect, useRef, useState } from "react";
+import { ColorPickerCustom } from "./ColorPickerCustom";
 
 interface SettingsPanelProps {
   config: DemoConfig;
   onConfigChange: (config: DemoConfig) => void;
-}
-
-function ColorPicker({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  // Extract rgba values
-  const getRgbaValues = (rgba: string) => {
-    const match = rgba.match(
-      /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/
-    );
-    if (!match) return { r: 255, g: 255, b: 255, a: 1 };
-    const [, r, g, b, a = "1"] = match;
-    return {
-      r: parseInt(r),
-      g: parseInt(g),
-      b: parseInt(b),
-      a: parseFloat(a),
-    };
-  };
-
-  // Convert rgba to hex
-  const rgbaToHex = (rgba: string) => {
-    const { r, g, b } = getRgbaValues(rgba);
-    return "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
-  };
-
-  // Convert hex to rgba
-  const hexToRgba = (hex: string, alpha: number) => {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `${r}, ${g}, ${b}, ${alpha}`;
-  };
-
-  const currentHex = rgbaToHex(value);
-  const currentAlpha = getRgbaValues(value).a;
-
-  return (
-    <div className="space-y-2">
-      <Label className="text-white">{label}</Label>
-      <div className="flex gap-2">
-        <div
-          className="w-10 h-10 rounded border-2 border-white/20 cursor-pointer"
-          style={{ backgroundColor: `rgba(${value})` }}
-          onClick={() => setIsOpen(!isOpen)}
-        />
-        <Input
-          value={currentHex}
-          onChange={(e) => onChange(hexToRgba(e.target.value, currentAlpha))}
-          className="flex-1"
-        />
-      </div>
-      {isOpen && (
-        <div className="mt-2 space-y-2">
-          <HexColorPicker
-            color={currentHex}
-            onChange={(hex) => onChange(hexToRgba(hex, currentAlpha))}
-          />
-          <div className="space-y-1">
-            <div className="flex justify-between">
-              <Label className="text-white text-xs">Alpha</Label>
-              <span className="text-xs text-white/70">
-                {currentAlpha.toFixed(2)}
-              </span>
-            </div>
-            <Slider
-              value={[currentAlpha]}
-              onValueChange={([a]) => onChange(hexToRgba(currentHex, a))}
-              min={0}
-              max={1}
-              step={0.01}
-              className="w-full"
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
 
 function SliderControl({
@@ -264,9 +178,9 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
                 />
               </div>
             </div>
-            <ColorPicker
+            <ColorPickerCustom
               label="Lorem Ipsum Color"
-              value={`rgba(${config.loremIpsumColor})`}
+              value={config.loremIpsumColor}
               onChange={(v) => updateConfig({ loremIpsumColor: v })}
             />
             <SliderControl
@@ -441,9 +355,9 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
                 />
               </div>
             </div>
-            <ColorPicker
+            <ColorPickerCustom
               label="Border Color"
-              value={`rgba(${config.overlays.borderColor})`}
+              value={config.overlays.borderColor}
               onChange={(v) =>
                 updateNestedConfig("overlays", { borderColor: v })
               }
@@ -457,9 +371,9 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
               min={0.5}
               max={5}
             />
-            <ColorPicker
+            <ColorPickerCustom
               label="Hover Light Color"
-              value={`rgba(${config.overlays.hoverLightColor})`}
+              value={config.overlays.hoverLightColor}
               onChange={(v) =>
                 updateNestedConfig("overlays", { hoverLightColor: v })
               }
@@ -510,7 +424,7 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
               max={360}
               step={1}
             />
-            <ColorPicker
+            <ColorPickerCustom
               label="Warp Color"
               value={config.warp.color}
               onChange={(v) => updateNestedConfig("warp", { color: v })}
@@ -541,16 +455,11 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
               max={100}
               step={1}
             />
-            <div className="space-y-2">
-              <Label className="text-white">Color</Label>
-              <Input
-                value={config.shine.color}
-                onChange={(e) =>
-                  updateNestedConfig("shine", { color: e.target.value })
-                }
-                placeholder="CSS color (e.g. rgba(255,255,255,0.3))"
-              />
-            </div>
+            <ColorPickerCustom
+              label="Color"
+              value={config.shine.color}
+              onChange={(v) => updateNestedConfig("shine", { color: v })}
+            />
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-white">Type</Label>

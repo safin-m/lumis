@@ -57,13 +57,13 @@ const initialConfig: DemoConfig = {
   warp: {
     angle: 195,
     intensity: 0,
-    color: "rgba(255, 221, 153, 1)",
+    color: "255, 221, 153, 1",
   },
 
   shine: {
     angle: 135,
     intensity: 0.4,
-    color: "hsla(0, 100%, 74%, 0.29)",
+    color: "189, 112, 112, 0.29",
     spread: 40,
     type: "shadow",
   },
