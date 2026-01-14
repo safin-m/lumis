@@ -275,6 +275,10 @@ export function ColorPickerCustom({
 
   // Extract rgba values from multiple formats
   const getRgbaValues = (color: string) => {
+    // Always return an object with r, g, b, a fields
+    if (!color || typeof color !== "string") {
+      return { r: 255, g: 255, b: 255, a: 1 };
+    }
     // Try "R, G, B, A" format first
     let match = color.match(/^(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?$/);
     if (match) {
@@ -285,7 +289,6 @@ export function ColorPickerCustom({
         a: parseFloat(match[4] || "1"),
       };
     }
-
     // Try rgba(...) format
     match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
     if (match) {
@@ -296,7 +299,6 @@ export function ColorPickerCustom({
         a: parseFloat(match[4] || "1"),
       };
     }
-
     // Default fallback
     return { r: 255, g: 255, b: 255, a: 1 };
   };

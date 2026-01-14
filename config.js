@@ -104,16 +104,27 @@ export const baseConfig = {
      * Default: 1.5 */
     borderThickness: 1.5,
 
-    /** Hover light color in RGBA format: "R, G, B, A"
+    /** Hover overlay 1 light color in RGBA format: "R, G, B, A"
      * If not set, defaults to borderColor
      * Default: "255, 255, 255, 1" */
-    hoverLightColor: "255, 255, 255, 1",
+    hoverOverlay1LightColor: "255, 255, 255, 1",
 
-    /** Hover light angle in degrees
+    /** Hover overlay 2 light color in RGBA format: "R, G, B, A"
+     * If not set, defaults to borderColor
+     * Default: "255, 255, 255, 1" */
+    hoverOverlay2LightColor: "255, 255, 255, 1",
+
+    /** Hover overlay 1 angle in degrees
      * 0° = top, 90° = right, 180° = bottom, 270° = left
      * Range: 0-360
      * Default: 0 */
-    hoverLightAngle: 0,
+    hoverOverlay1Angle: 0,
+
+    /** Hover overlay 2 angle in degrees
+     * 0° = top, 90° = right, 180° = bottom, 270° = left
+     * Range: 0-360
+     * Default: 0 */
+    hoverOverlay2Angle: 0,
 
     /** Hover light intensity - multiplies the alpha channel
      * Range: 0-1 (0=invisible, 1=full intensity)

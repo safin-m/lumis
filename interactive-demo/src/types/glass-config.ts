@@ -27,6 +27,11 @@ export interface GlassConfig {
     hoverLightIntensity: number;
     hoverOverlay1Opacity: number;
     hoverOverlay2Opacity: number;
+    hoverOverlay1LightColor: string;
+    hoverOverlay2LightColor: string;
+    hoverOverlay1Angle: number;
+    hoverOverlay2Angle: number;
+    hoverOverlayBlendMode: string;
     extraOverlay: {
       enabled: boolean;
       background: string;

@@ -32,6 +32,11 @@ const initialConfig: DemoConfig = {
     hoverLightIntensity: 1,
     hoverOverlay1Opacity: 0.5,
     hoverOverlay2Opacity: 0,
+    hoverOverlay1LightColor: "255, 255, 255, 1",
+    hoverOverlay2LightColor: "255, 255, 255, 1",
+    hoverOverlay1Angle: 0,
+    hoverOverlay2Angle: 0,
+    hoverOverlayBlendMode: "overlay",
     extraOverlay: {
       enabled: false,
       background:

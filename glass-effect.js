@@ -600,24 +600,35 @@ export class GlassEffect {
    * @param {Object} overlays - Overlay configuration object
    */
   createHoverOverlays(overlays) {
-    const hoverLightAngle = overlays?.hoverLightAngle ?? 0;
     const hoverLightIntensity = overlays?.hoverLightIntensity ?? 1;
     const borderColor = overlays?.borderColor || "255, 255, 255, 1";
-    const hoverLightColor = overlays?.hoverLightColor || borderColor;
     const hoverOverlayBlendMode = overlays?.hoverOverlayBlendMode || "overlay";
 
-    // Convert angle to gradient position using trigonometry
-    const angleRad = (hoverLightAngle * Math.PI) / 180;
-    const x = 50 + 50 * Math.sin(angleRad);
-    const y = 50 - 50 * Math.cos(angleRad);
+    // Overlay 1
+    const hoverOverlay1Angle = overlays?.hoverOverlay1Angle ?? 0;
+    const hoverOverlay1LightColor =
+      overlays?.hoverOverlay1LightColor || borderColor;
+    const angleRad1 = (hoverOverlay1Angle * Math.PI) / 180;
+    const x1 = 50 + 50 * Math.sin(angleRad1);
+    const y1 = 50 - 50 * Math.cos(angleRad1);
+    const colorParts1 = hoverOverlay1LightColor.split(",").map((v) => v.trim());
+    const baseAlpha1 = parseFloat(colorParts1[3] || "1");
+    const intensifiedAlpha1 = baseAlpha1 * hoverLightIntensity;
+    const hoverColor1 = `${colorParts1[0]}, ${colorParts1[1]}, ${colorParts1[2]}, ${intensifiedAlpha1}`;
+    const gradient1 = `radial-gradient(circle at ${x1}% ${y1}%, rgba(${hoverColor1}) 0%, rgba(${colorParts1[0]}, ${colorParts1[1]}, ${colorParts1[2]}, 0) 50%)`;
 
-    // Parse RGBA color string and apply intensity multiplier to alpha channel
-    const colorParts = hoverLightColor.split(",").map((v) => v.trim());
-    const baseAlpha = parseFloat(colorParts[3] || "1");
-    const intensifiedAlpha = baseAlpha * hoverLightIntensity;
-    const hoverColor = `${colorParts[0]}, ${colorParts[1]}, ${colorParts[2]}, ${intensifiedAlpha}`;
-    const gradient1 = `radial-gradient(circle at ${x}% ${y}%, rgba(${hoverColor}) 0%, rgba(${colorParts[0]}, ${colorParts[1]}, ${colorParts[2]}, 0) 50%)`;
-    const gradient2 = `radial-gradient(circle at ${x}% ${y}%, rgba(${hoverColor}) 0%, rgba(${colorParts[0]}, ${colorParts[1]}, ${colorParts[2]}, 0) 80%)`;
+    // Overlay 2
+    const hoverOverlay2Angle = overlays?.hoverOverlay2Angle ?? 0;
+    const hoverOverlay2LightColor =
+      overlays?.hoverOverlay2LightColor || borderColor;
+    const angleRad2 = (hoverOverlay2Angle * Math.PI) / 180;
+    const x2 = 50 + 50 * Math.sin(angleRad2);
+    const y2 = 50 - 50 * Math.cos(angleRad2);
+    const colorParts2 = hoverOverlay2LightColor.split(",").map((v) => v.trim());
+    const baseAlpha2 = parseFloat(colorParts2[3] || "1");
+    const intensifiedAlpha2 = baseAlpha2 * hoverLightIntensity;
+    const hoverColor2 = `${colorParts2[0]}, ${colorParts2[1]}, ${colorParts2[2]}, ${intensifiedAlpha2}`;
+    const gradient2 = `radial-gradient(circle at ${x2}% ${y2}%, rgba(${hoverColor2}) 0%, rgba(${colorParts2[0]}, ${colorParts2[1]}, ${colorParts2[2]}, 0) 80%)`;
 
     // First hover overlay (tighter gradient)
     if (!this.hoverOverlay1) {
@@ -628,15 +639,12 @@ export class GlassEffect {
         pointerEvents: "none",
         transition: "opacity 0.2s ease-out",
         opacity: "0",
-        // Radial gradient positioned at calculated x, y coordinates
         backgroundImage: gradient1,
         mixBlendMode: hoverOverlayBlendMode,
-        // Match container's border radius
         borderRadius: `${this.config.radius}px`,
       });
       this.element.appendChild(this.hoverOverlay1);
     } else {
-      // Update existing hover overlay with all properties
       this.hoverOverlay1.style.backgroundImage = gradient1;
       this.hoverOverlay1.style.borderRadius = `${this.config.radius}px`;
       this.hoverOverlay1.style.mixBlendMode = hoverOverlayBlendMode;
@@ -651,15 +659,12 @@ export class GlassEffect {
         pointerEvents: "none",
         transition: "opacity 0.2s ease-out",
         opacity: "0",
-        // Wider gradient (80% spread vs 50%)
         backgroundImage: gradient2,
         mixBlendMode: hoverOverlayBlendMode,
-        // Match container's border radius
         borderRadius: `${this.config.radius}px`,
       });
       this.element.appendChild(this.hoverOverlay2);
     } else {
-      // Update existing hover overlay with all properties
       this.hoverOverlay2.style.backgroundImage = gradient2;
       this.hoverOverlay2.style.borderRadius = `${this.config.radius}px`;
       this.hoverOverlay2.style.mixBlendMode = hoverOverlayBlendMode;
