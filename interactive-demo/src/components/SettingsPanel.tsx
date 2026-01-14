@@ -256,12 +256,12 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
                       mode: e.target.value as "standard" | "shader",
                     })
                   }
-                  className="h-9 rounded border border-white/20 bg-black/80 px-3 text-white text-sm"
+                  className="h-9 rounded border border-white/20 bg-black/30 px-3 text-white text-sm"
                 >
-                  <option value="standard" className="bg-black text-white">
+                  <option value="standard" className="bg-black/90 text-white">
                     Standard
                   </option>
-                  <option value="shader" className="bg-black text-white">
+                  <option value="shader" className="bg-black/90 text-white">
                     Shader
                   </option>
                 </select>
@@ -360,7 +360,7 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
             <div className="space-y-2">
               <Label className="text-white">Hover Overlay Blend Mode</Label>
               <select
-                className="w-full rounded border border-white/20 bg-black/80 px-2 py-1 text-white text-sm"
+                className="w-full rounded border border-white/20 bg-black/30 px-2 py-1 text-white text-sm"
                 value={config.overlays.hoverOverlayBlendMode || "overlay"}
                 onChange={(e) =>
                   updateNestedConfig("overlays", {
@@ -368,20 +368,48 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
                   })
                 }
               >
-                <option value="overlay">Overlay (default)</option>
-                <option value="normal">Normal</option>
-                <option value="multiply">Multiply</option>
-                <option value="screen">Screen</option>
-                <option value="color">Color</option>
-                <option value="color-dodge">Color Dodge</option>
-                <option value="color-burn">Color Burn</option>
-                <option value="darken">Darken</option>
-                <option value="lighten">Lighten</option>
-                <option value="difference">Difference</option>
-                <option value="exclusion">Exclusion</option>
-                <option value="hue">Hue</option>
-                <option value="saturation">Saturation</option>
-                <option value="luminosity">Luminosity</option>
+                <option value="overlay" className="bg-black/90 text-white">
+                  Overlay (default)
+                </option>
+                <option value="normal" className="bg-black/90 text-white">
+                  Normal
+                </option>
+                <option value="multiply" className="bg-black/90 text-white">
+                  Multiply
+                </option>
+                <option value="screen" className="bg-black/90 text-white">
+                  Screen
+                </option>
+                <option value="color" className="bg-black/90 text-white">
+                  Color
+                </option>
+                <option value="color-dodge" className="bg-black/90 text-white">
+                  Color Dodge
+                </option>
+                <option value="color-burn" className="bg-black/90 text-white">
+                  Color Burn
+                </option>
+                <option value="darken" className="bg-black/90 text-white">
+                  Darken
+                </option>
+                <option value="lighten" className="bg-black/90 text-white">
+                  Lighten
+                </option>
+                <option value="difference" className="bg-black/90 text-white">
+                  Difference
+                </option>
+                <option value="exclusion" className="bg-black/90 text-white">
+                  Exclusion
+                </option>
+                <option value="hue" className="bg-black/90 text-white">
+                  Hue
+                </option>
+                <option value="saturation" className="bg-black/90 text-white">
+                  Saturation
+                </option>
+                <option value="luminosity" className="bg-black/90 text-white">
+                  Luminosity
+                </option>
               </select>
             </div>
             <div className="space-y-2">
@@ -714,12 +742,12 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
                       type: e.target.value as "shadow" | "gradient",
                     })
                   }
-                  className="h-9 rounded border border-white/20 bg-black/80 px-3 text-white text-sm"
+                  className="h-9 rounded border border-white/20 bg-black/30 px-3 text-white text-sm"
                 >
-                  <option value="shadow" className="bg-black text-white">
+                  <option value="shadow" className="bg-black/90 text-white">
                     Shadow
                   </option>
-                  <option value="gradient" className="bg-black text-white">
+                  <option value="gradient" className="bg-black/90 text-white">
                     Gradient
                   </option>
                 </select>
@@ -788,12 +816,47 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
             />
             <div className="space-y-2">
               <Label className="text-white">Easing</Label>
-              <Input
+              <select
+                className="h-9 rounded border border-white/20 bg-black/30 px-3 text-white text-sm w-full"
                 value={config.hover.easing}
                 onChange={(e) =>
                   updateNestedConfig("hover", { easing: e.target.value })
                 }
-              />
+              >
+                <option value="ease" className="bg-black/90 text-white">
+                  ease
+                </option>
+                <option value="linear" className="bg-black/90 text-white">
+                  linear
+                </option>
+                <option value="ease-in" className="bg-black/90 text-white">
+                  ease-in
+                </option>
+                <option value="ease-out" className="bg-black/90 text-white">
+                  ease-out
+                </option>
+                <option value="ease-in-out" className="bg-black/90 text-white">
+                  ease-in-out
+                </option>
+                <option
+                  value="cubic-bezier(0.4, 0, 0.2, 1)"
+                  className="bg-black/90 text-white"
+                >
+                  cubic-bezier(0.4, 0, 0.2, 1) (standard)
+                </option>
+                <option
+                  value="cubic-bezier(0.4, 0, 1, 1)"
+                  className="bg-black/90 text-white"
+                >
+                  cubic-bezier(0.4, 0, 1, 1) (accelerate)
+                </option>
+                <option
+                  value="cubic-bezier(0, 0, 0.2, 1)"
+                  className="bg-black/90 text-white"
+                >
+                  cubic-bezier(0, 0, 0.2, 1) (decelerate)
+                </option>
+              </select>
             </div>
           </Section>
         </div>
