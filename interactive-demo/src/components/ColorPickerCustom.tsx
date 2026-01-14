@@ -303,14 +303,11 @@ export function ColorPickerCustom({
     return { r: 255, g: 255, b: 255, a: 1 };
   };
 
-  // Initialize state from value when it changes externally
+  // Always sync state from value prop on mount and whenever value changes
   useEffect(() => {
-    if (value === prevValueRef.current) return; // Don't update if value hasn't changed
-
     prevValueRef.current = value;
     const { r, g, b, a } = getRgbaValues(value);
     const { h, s, l } = rgbaToHsla(r, g, b);
-
     setHue(h);
     setSaturation(s);
     setLightness(l);
