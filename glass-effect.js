@@ -728,6 +728,7 @@ export class GlassEffect {
       this.feImage.setAttribute("href", this.buildDisplacementMap());
       this.updateFilterAttributes();
       this.applyElementStyles();
+      this.setupHoverEffects();
       this.updateScheduled = false;
     });
   }
