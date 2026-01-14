@@ -214,14 +214,18 @@ export function ColorPickerCustom({
       }
 
       // Draw indicator for current hue
-      const angle = ((hue - 90) * Math.PI) / 180;
+      const angle = (hue * Math.PI) / 180;
       const indicatorRadius = radius;
+      // Use the same marker size calculation as the color square marker for consistency
+      // The color square marker uses: Math.max(6, canvasSize * 0.04)
+      const markerRadius = Math.max(6, canvasSize * 0.04);
+      const markerLineWidth = 2 * dpr;
       const ix = cx + indicatorRadius * Math.cos(angle);
       const iy = cy + indicatorRadius * Math.sin(angle);
       ctx.save();
       ctx.beginPath();
-      ctx.arc(ix, iy, ringWidth * 0.45, 0, 2 * Math.PI);
-      ctx.lineWidth = 3 * dpr;
+      ctx.arc(ix, iy, markerRadius, 0, 2 * Math.PI);
+      ctx.lineWidth = markerLineWidth;
       ctx.strokeStyle = "#fff";
       ctx.shadowBlur = 0;
       ctx.stroke();
