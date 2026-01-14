@@ -43,8 +43,9 @@ export function GlassObject({
     ...cfg,
     overlays: {
       ...cfg.overlays,
-      borderColor: toCssColor(cfg.overlays.borderColor),
-      hoverLightColor: toCssColor(cfg.overlays.hoverLightColor),
+      // Don't convert borderColor/hoverLightColor - glass effect expects "R, G, B, A" format
+      // borderColor: toCssColor(cfg.overlays.borderColor),
+      // hoverLightColor: toCssColor(cfg.overlays.hoverLightColor),
     },
     warp: {
       ...cfg.warp,
@@ -82,7 +83,26 @@ export function GlassObject({
   useEffect(() => {
     if (glassEffectRef.current) {
       const configWithCssColors = withCssColors(config);
-      Object.assign(glassEffectRef.current.config, configWithCssColors);
+      // Deep merge config to preserve nested object changes
+      glassEffectRef.current.config = {
+        ...glassEffectRef.current.config,
+        ...configWithCssColors,
+        warp: { ...glassEffectRef.current.config.warp, ...configWithCssColors.warp },
+        shine: { ...glassEffectRef.current.config.shine, ...configWithCssColors.shine },
+        hover: { ...glassEffectRef.current.config.hover, ...configWithCssColors.hover },
+        interactions: {
+          ...glassEffectRef.current.config.interactions,
+          ...configWithCssColors.interactions,
+        },
+        overlays: {
+          ...glassEffectRef.current.config.overlays,
+          ...configWithCssColors.overlays,
+          extraOverlay: {
+            ...glassEffectRef.current.config.overlays.extraOverlay,
+            ...configWithCssColors.overlays.extraOverlay,
+          },
+        },
+      };
       glassEffectRef.current.update();
     }
   }, [config]);

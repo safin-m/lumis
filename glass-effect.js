@@ -458,7 +458,14 @@ export class GlassEffect {
    */
   applyOverlayLayers() {
     const { overlays } = this.config;
-    if (!overlays?.enabled) return;
+    
+    // If overlays are disabled, remove all overlay elements
+    if (!overlays?.enabled) {
+      this.removeBorderLayers();
+      this.removeExtraOverlay();
+      this.removeHoverOverlays();
+      return;
+    }
 
     // Create or update each overlay type
     this.createBorderLayers(overlays);
@@ -645,6 +652,47 @@ export class GlassEffect {
       // Update existing hover overlay with all properties
       this.hoverOverlay2.style.backgroundImage = gradient2;
       this.hoverOverlay2.style.borderRadius = `${this.config.radius}px`;
+    }
+  }
+
+  /**
+   * Removes border layers when overlays are disabled
+   * @private
+   */
+  removeBorderLayers() {
+    if (this.borderLayer1) {
+      this.borderLayer1.remove();
+      this.borderLayer1 = null;
+    }
+    if (this.borderLayer2) {
+      this.borderLayer2.remove();
+      this.borderLayer2 = null;
+    }
+  }
+
+  /**
+   * Removes extra overlay when overlays are disabled
+   * @private
+   */
+  removeExtraOverlay() {
+    if (this.extraOverlay) {
+      this.extraOverlay.remove();
+      this.extraOverlay = null;
+    }
+  }
+
+  /**
+   * Removes hover overlays when overlays are disabled
+   * @private
+   */
+  removeHoverOverlays() {
+    if (this.hoverOverlay1) {
+      this.hoverOverlay1.remove();
+      this.hoverOverlay1 = null;
+    }
+    if (this.hoverOverlay2) {
+      this.hoverOverlay2.remove();
+      this.hoverOverlay2 = null;
     }
   }
 
