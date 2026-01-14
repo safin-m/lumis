@@ -321,6 +321,29 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
           </Section>
 
           <Section title="Overlays">
+                        <div className="space-y-2">
+                          <Label className="text-white">Hover Overlay Blend Mode</Label>
+                          <select
+                            className="w-full rounded border border-white/20 bg-black/80 px-2 py-1 text-white text-sm"
+                            value={config.overlays.hoverOverlayBlendMode || "overlay"}
+                            onChange={e => updateNestedConfig("overlays", { hoverOverlayBlendMode: e.target.value })}
+                          >
+                            <option value="overlay">Overlay (default)</option>
+                            <option value="normal">Normal</option>
+                            <option value="multiply">Multiply</option>
+                            <option value="screen">Screen</option>
+                            <option value="color">Color</option>
+                            <option value="color-dodge">Color Dodge</option>
+                            <option value="color-burn">Color Burn</option>
+                            <option value="darken">Darken</option>
+                            <option value="lighten">Lighten</option>
+                            <option value="difference">Difference</option>
+                            <option value="exclusion">Exclusion</option>
+                            <option value="hue">Hue</option>
+                            <option value="saturation">Saturation</option>
+                            <option value="luminosity">Luminosity</option>
+                          </select>
+                        </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-white">Enabled</Label>

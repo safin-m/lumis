@@ -130,6 +130,10 @@ export const baseConfig = {
      * Default: 0 */
     hoverOverlay2Opacity: 0,
 
+    /** Blend mode for hover overlays (radial gradients)
+     * Default: "overlay" (use "normal" for true color, or any CSS blend mode) */
+    hoverOverlayBlendMode: "overlay",
+
     /** Extra overlay layer - custom gradient or color on top of everything */
     extraOverlay: {
       /** Enable extra overlay
