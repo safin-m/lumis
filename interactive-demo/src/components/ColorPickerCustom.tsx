@@ -151,8 +151,6 @@ export function ColorPickerCustom({
     window.addEventListener("touchend", handleHueTouchEnd);
   };
   const [isOpen, setIsOpen] = useState(false);
-  // Track if popover was just opened
-  const justOpenedRef = useRef(false);
   const [hue, setHue] = useState(0);
   const [saturation, setSaturation] = useState(100);
   const [lightness, setLightness] = useState(50);
@@ -168,7 +166,7 @@ export function ColorPickerCustom({
   const [hueRingSize, setHueRingSize] = useState(280); // outer size
   const [canvasSize, setCanvasSize] = useState(168); // 60% of 280 by default
   // Multiplier for color square size (change here for different ratios)
-  const colorSquareMultiplier = 0.66;
+  const colorSquareMultiplier = 0.64;
   const hueRingRef = useRef<HTMLCanvasElement>(null);
   // Draw the hue ring (circular hue slider)
   // Always update sizes after popover is open and visible
@@ -195,6 +193,13 @@ export function ColorPickerCustom({
       const dpr = window.devicePixelRatio || 1;
       const size = Math.round(hueRingSize * dpr);
       const ringWidth = 8 * dpr; // fixed 8px thickness (devicePixelRatio aware)
+      const markerLineWidth = 2 * dpr;
+      const markerRadius = Math.max(
+        6 * dpr,
+        Math.min(canvasSize * 0.04 * dpr, (size / 2) * 0.12)
+      );
+      // Padding so marker is always visible at the edge
+      const padding = markerRadius + markerLineWidth / 2;
       if (canvas.width !== size) canvas.width = size;
       if (canvas.height !== size) canvas.height = size;
       ctx.clearRect(0, 0, size, size);
@@ -202,7 +207,7 @@ export function ColorPickerCustom({
       // Draw hue gradient ring
       const cx = size / 2;
       const cy = size / 2;
-      const radius = (size - ringWidth) / 2;
+      const radius = (size - ringWidth) / 2 - padding + ringWidth / 2;
       for (let i = 0; i < 360; i++) {
         const startAngle = ((i - 1) * Math.PI) / 180;
         const endAngle = (i * Math.PI) / 180;
@@ -216,10 +221,6 @@ export function ColorPickerCustom({
       // Draw indicator for current hue
       const angle = (hue * Math.PI) / 180;
       const indicatorRadius = radius;
-      // Use the same marker size calculation as the color square marker for consistency
-      // The color square marker uses: Math.max(6, canvasSize * 0.04)
-      const markerRadius = Math.max(6, canvasSize * 0.04);
-      const markerLineWidth = 2 * dpr;
       const ix = cx + indicatorRadius * Math.cos(angle);
       const iy = cy + indicatorRadius * Math.sin(angle);
       ctx.save();
