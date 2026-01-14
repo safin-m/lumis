@@ -278,6 +278,55 @@ export const baseConfig = {
      * Default: 1. */
     scale: 1,
 
+    /** Border gradient configuration for dynamic hover effect */
+    borderGradient: {
+      /** Base gradient position (0-100%)
+       * Default: 33 */
+      startBase: 33,
+
+      /** Gradient start multiplier based on mouse Y offset
+       * Default: 0.3 */
+      startOffsetMultiplier: 0.3,
+
+      /** Base gradient end position (0-100%)
+       * Default: 66 */
+      endBase: 66,
+
+      /** Gradient end multiplier based on mouse Y offset
+       * Default: 0.4 */
+      endOffsetMultiplier: 0.4,
+
+      /** Base opacity for inner color stop
+       * Range: 0-1
+       * Default: 0.12 */
+      opacityBase: 0.12,
+
+      /** Opacity multiplier based on mouse X offset
+       * Default: 0.008 */
+      opacityMultiplier: 0.008,
+
+      /** Base opacity for outer color stop (peak brightness)
+       * Range: 0-1
+       * Default: 0.4 */
+      peakOpacityBase: 0.4,
+
+      /** Peak opacity multiplier based on mouse X offset
+       * Default: 0.012 */
+      peakOpacityMultiplier: 0.012,
+
+      /** Secondary layer opacity boost
+       * Default: 0.2 */
+      secondaryBoost: 0.2,
+
+      /** Gradient rotation angle base in degrees
+       * Default: 135 */
+      angleBase: 135,
+
+      /** Gradient rotation multiplier based on mouse X offset
+       * Default: 1.2 */
+      angleMultiplier: 1.2,
+    },
+
     /** Transition duration in seconds
      * Default: 0.3 */
     duration: 0.3,

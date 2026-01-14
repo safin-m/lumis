@@ -644,6 +644,174 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
                 }
               />
             </div>
+
+            <Section title="Border Gradient" defaultOpen={false}>
+              <SliderControl
+                label="Start Base"
+                value={config.hover.borderGradient.startBase}
+                onChange={(v) =>
+                  updateNestedConfig("hover", {
+                    borderGradient: {
+                      ...config.hover.borderGradient,
+                      startBase: v,
+                    },
+                  })
+                }
+                min={0}
+                max={100}
+                step={1}
+              />
+              <SliderControl
+                label="Start Offset Multiplier"
+                value={config.hover.borderGradient.startOffsetMultiplier}
+                onChange={(v) =>
+                  updateNestedConfig("hover", {
+                    borderGradient: {
+                      ...config.hover.borderGradient,
+                      startOffsetMultiplier: v,
+                    },
+                  })
+                }
+                min={0}
+                max={1}
+                step={0.05}
+              />
+              <SliderControl
+                label="End Base"
+                value={config.hover.borderGradient.endBase}
+                onChange={(v) =>
+                  updateNestedConfig("hover", {
+                    borderGradient: {
+                      ...config.hover.borderGradient,
+                      endBase: v,
+                    },
+                  })
+                }
+                min={0}
+                max={100}
+                step={1}
+              />
+              <SliderControl
+                label="End Offset Multiplier"
+                value={config.hover.borderGradient.endOffsetMultiplier}
+                onChange={(v) =>
+                  updateNestedConfig("hover", {
+                    borderGradient: {
+                      ...config.hover.borderGradient,
+                      endOffsetMultiplier: v,
+                    },
+                  })
+                }
+                min={0}
+                max={1}
+                step={0.05}
+              />
+              <SliderControl
+                label="Opacity Base"
+                value={config.hover.borderGradient.opacityBase}
+                onChange={(v) =>
+                  updateNestedConfig("hover", {
+                    borderGradient: {
+                      ...config.hover.borderGradient,
+                      opacityBase: v,
+                    },
+                  })
+                }
+                min={0}
+                max={1}
+                step={0.01}
+              />
+              <SliderControl
+                label="Opacity Multiplier"
+                value={config.hover.borderGradient.opacityMultiplier}
+                onChange={(v) =>
+                  updateNestedConfig("hover", {
+                    borderGradient: {
+                      ...config.hover.borderGradient,
+                      opacityMultiplier: v,
+                    },
+                  })
+                }
+                min={0}
+                max={0.05}
+                step={0.001}
+              />
+              <SliderControl
+                label="Peak Opacity Base"
+                value={config.hover.borderGradient.peakOpacityBase}
+                onChange={(v) =>
+                  updateNestedConfig("hover", {
+                    borderGradient: {
+                      ...config.hover.borderGradient,
+                      peakOpacityBase: v,
+                    },
+                  })
+                }
+                min={0}
+                max={1}
+                step={0.01}
+              />
+              <SliderControl
+                label="Peak Opacity Multiplier"
+                value={config.hover.borderGradient.peakOpacityMultiplier}
+                onChange={(v) =>
+                  updateNestedConfig("hover", {
+                    borderGradient: {
+                      ...config.hover.borderGradient,
+                      peakOpacityMultiplier: v,
+                    },
+                  })
+                }
+                min={0}
+                max={0.05}
+                step={0.001}
+              />
+              <SliderControl
+                label="Secondary Boost"
+                value={config.hover.borderGradient.secondaryBoost}
+                onChange={(v) =>
+                  updateNestedConfig("hover", {
+                    borderGradient: {
+                      ...config.hover.borderGradient,
+                      secondaryBoost: v,
+                    },
+                  })
+                }
+                min={0}
+                max={0.5}
+                step={0.01}
+              />
+              <SliderControl
+                label="Angle Base"
+                value={config.hover.borderGradient.angleBase}
+                onChange={(v) =>
+                  updateNestedConfig("hover", {
+                    borderGradient: {
+                      ...config.hover.borderGradient,
+                      angleBase: v,
+                    },
+                  })
+                }
+                min={0}
+                max={360}
+                step={1}
+              />
+              <SliderControl
+                label="Angle Multiplier"
+                value={config.hover.borderGradient.angleMultiplier}
+                onChange={(v) =>
+                  updateNestedConfig("hover", {
+                    borderGradient: {
+                      ...config.hover.borderGradient,
+                      angleMultiplier: v,
+                    },
+                  })
+                }
+                min={0}
+                max={5}
+                step={0.1}
+              />
+            </Section>
           </Section>
         </div>
       )}

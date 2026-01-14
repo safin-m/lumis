@@ -707,18 +707,23 @@ export class GlassEffect {
         const offsetY = ((e.clientY - centerY) / rect.height) * 100;
 
         // Dynamic gradient parameters based on mouse position
-        const start = Math.max(10, 33 + offsetY * 0.3);
-        const end = Math.min(90, 66 + offsetY * 0.4);
-        const c1 = 0.12 + Math.abs(offsetX) * 0.008; // Color stop opacity
-        const c2 = 0.4 + Math.abs(offsetX) * 0.012;
-        const angle = 135 + offsetX * 1.2; // Rotate gradient with mouse
+        const bg = this.config.hover.borderGradient;
+        const start = Math.max(
+          10,
+          bg.startBase + offsetY * bg.startOffsetMultiplier
+        );
+        const end = Math.min(90, bg.endBase + offsetY * bg.endOffsetMultiplier);
+        const c1 = bg.opacityBase + Math.abs(offsetX) * bg.opacityMultiplier;
+        const c2 =
+          bg.peakOpacityBase + Math.abs(offsetX) * bg.peakOpacityMultiplier;
+        const angle = bg.angleBase + offsetX * bg.angleMultiplier;
 
         // Create dynamic gradients for both border layers
         const gradient1 = `linear-gradient(${angle}deg, rgba(255,255,255,0) 0%, rgba(255,255,255,${c1}) ${start}%, rgba(255,255,255,${c2}) ${end}%, rgba(255,255,255,0) 100%)`;
         const gradient2 = `linear-gradient(${angle}deg, rgba(255,255,255,0) 0%, rgba(255,255,255,${
-          c1 + 0.2
+          c1 + bg.secondaryBoost
         }) ${start}%, rgba(255,255,255,${
-          c2 + 0.2
+          c2 + bg.secondaryBoost
         }) ${end}%, rgba(255,255,255,0) 100%)`;
 
         this.borderLayer1.style.background = gradient1;

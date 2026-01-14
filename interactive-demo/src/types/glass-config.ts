@@ -68,6 +68,19 @@ export interface GlassConfig {
     scale: number;
     duration: number;
     easing: string;
+    borderGradient: {
+      startBase: number;
+      startOffsetMultiplier: number;
+      endBase: number;
+      endOffsetMultiplier: number;
+      opacityBase: number;
+      opacityMultiplier: number;
+      peakOpacityBase: number;
+      peakOpacityMultiplier: number;
+      secondaryBoost: number;
+      angleBase: number;
+      angleMultiplier: number;
+    };
   };
 
   width: number;
