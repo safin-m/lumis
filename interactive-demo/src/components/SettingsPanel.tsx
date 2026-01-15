@@ -140,7 +140,7 @@ export function SettingsPanel({
     debounce((v: number) => {
       updateNestedConfig("interactions", { elasticity: v });
     }, 200),
-    []
+    [config]
   );
   // Debounced config update for activation zone
   const debouncedSetActivationZone = useCallback(
