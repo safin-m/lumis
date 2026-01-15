@@ -462,14 +462,6 @@ export function SettingsPanel({
               step={0.01}
             />
             <SliderControl
-              label="Radius"
-              value={config.radius}
-              onChange={(v) => updateConfig({ radius: v })}
-              min={0}
-              max={100}
-              step={1}
-            />
-            <SliderControl
               label="Frost"
               value={config.frost}
               onChange={(v) => updateConfig({ frost: v })}
