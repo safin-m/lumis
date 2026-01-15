@@ -192,23 +192,22 @@ export class SVGFilterBuilder {
             <feFuncA type="table" tableValues="1 0"/>
           </feComponentTransfer>
           
-          <!-- Create center: use distorted rgb if preserving, else re-distort blurred/edge-masked result for center -->
-          ${
-            this.config.edgeMaskPreserveDistortion
-              ? `<!-- Use distorted result for center -->`
-              : `<!-- Re-distort blurred/edge-masked result for center -->
-          <feDisplacementMap in="SourceGraphic" in2="map" scale="0" xChannelSelector="${this.config.x}" yChannelSelector="${this.config.y}" result="centerUndistorted"/>
-          <feDisplacementMap in="centerUndistorted" in2="map" scale="${this.config.scale}" xChannelSelector="${this.config.x}" yChannelSelector="${this.config.y}" result="centerRedistorted"/>`
-          }
+          <!-- Re-distort blurred/edge-masked result for center -->
+          <feDisplacementMap in="SourceGraphic" in2="map" scale="0" xChannelSelector="${
+            this.config.x
+          }" yChannelSelector="${this.config.y}" result="centerUndistorted"/>
+          <feDisplacementMap in="centerUndistorted" in2="map" scale="${
+            this.config.scale
+          }" xChannelSelector="${this.config.x}" yChannelSelector="${
+                  this.config.y
+                }" result="centerRedistorted"/>
           
           <!-- Apply inverted mask to center -->
-          <feComposite in="${
-            this.config.edgeMaskPreserveDistortion ? "rgb" : "centerRedistorted"
-          }" in2="invertedMask" operator="${
-                  this.config.edgeMaskArithmeticBlend
-                    ? 'arithmetic" k1="0" k2="1" k3="0" k4="0'
-                    : "in"
-                }" result="centerClean"/>
+          <feComposite in="centerRedistorted" in2="invertedMask" operator="${
+            this.config.edgeMaskArithmeticBlend
+              ? 'arithmetic" k1="0" k2="1" k3="0" k4="0'
+              : "in"
+          }" result="centerClean"/>
           
           <!-- Combine edges and center -->
           <feComposite in="edgeAberration" in2="centerClean" operator="${
