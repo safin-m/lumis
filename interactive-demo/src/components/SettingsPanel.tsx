@@ -190,61 +190,63 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
               max={100}
               step={1}
             />
-            <div className="space-y-2">
-              <Label className="text-white">Background Image URL</Label>
-              <Input
-                value={config.backgroundImage}
-                onChange={(e) =>
-                  updateConfig({ backgroundImage: e.target.value })
-                }
-                placeholder="Enter image URL..."
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  updateConfig({
-                    backgroundImage: `https://picsum.photos/1920/1080?random=${Math.random()}`,
-                  })
-                }
-                className="w-full"
-              >
-                Random Image
-              </Button>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-white">Show Lorem Ipsum</Label>
-                <Switch
-                  checked={config.showLoremIpsum}
+            <Section title="Background" defaultOpen>
+              <div className="space-y-2">
+                <Label className="text-white">Background Image URL</Label>
+                <Input
+                  value={config.backgroundImage}
                   onChange={(e) =>
-                    updateConfig({ showLoremIpsum: e.target.checked })
+                    updateConfig({ backgroundImage: e.target.value })
                   }
-                  className="h-6 w-11"
+                  placeholder="Enter image URL..."
                 />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    updateConfig({
+                      backgroundImage: `https://picsum.photos/1920/1080?random=${Math.random()}`,
+                    })
+                  }
+                  className="w-full"
+                >
+                  Random Image
+                </Button>
               </div>
-            </div>
-            <ColorPickerCustom
-              label="Lorem Ipsum Color"
-              value={config.loremIpsumColor}
-              onChange={(v) => updateConfig({ loremIpsumColor: v })}
-            />
-            <SliderControl
-              label="Font Size (px)"
-              value={config.loremIpsumFontSize}
-              onChange={(v) => updateConfig({ loremIpsumFontSize: v })}
-              min={12}
-              max={32}
-              step={1}
-            />
-            <SliderControl
-              label="Paragraph Count"
-              value={config.loremIpsumParagraphs}
-              onChange={(v) => updateConfig({ loremIpsumParagraphs: v })}
-              min={1}
-              max={5}
-              step={1}
-            />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-white">Show Lorem Ipsum</Label>
+                  <Switch
+                    checked={config.showLoremIpsum}
+                    onChange={(e) =>
+                      updateConfig({ showLoremIpsum: e.target.checked })
+                    }
+                    className="h-6 w-11"
+                  />
+                </div>
+              </div>
+              <ColorPickerCustom
+                label="Lorem Ipsum Color"
+                value={config.loremIpsumColor}
+                onChange={(v) => updateConfig({ loremIpsumColor: v })}
+              />
+              <SliderControl
+                label="Font Size (px)"
+                value={config.loremIpsumFontSize}
+                onChange={(v) => updateConfig({ loremIpsumFontSize: v })}
+                min={12}
+                max={32}
+                step={1}
+              />
+              <SliderControl
+                label="Paragraph Count"
+                value={config.loremIpsumParagraphs}
+                onChange={(v) => updateConfig({ loremIpsumParagraphs: v })}
+                min={1}
+                max={5}
+                step={1}
+              />
+            </Section>
           </Section>
 
           <Section title="Core Effects">
