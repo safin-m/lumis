@@ -1166,6 +1166,32 @@ export function SettingsPanel({
                   <code>{generateSVGCode(glassEffectRef)}</code>
                 </pre>
               </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-white font-semibold">
+                    SVG Filter Markup
+                  </Label>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const markup =
+                        glassEffectRef.current?.exportSVGFilterMarkup?.() ||
+                        "<!-- Glass effect not initialized yet -->";
+                      navigator.clipboard.writeText(markup);
+                    }}
+                    className="bg-white/10 hover:bg-white/20 text-white"
+                  >
+                    Copy
+                  </Button>
+                </div>
+                <pre className="p-3 bg-black/40 rounded border border-white/10 text-xs text-white overflow-x-auto max-h-[300px] overflow-y-auto">
+                  <code>
+                    {glassEffectRef.current?.exportSVGFilterMarkup?.() ||
+                      "<!-- Glass effect not initialized yet -->"}
+                  </code>
+                </pre>
+              </div>
             </div>
           </Section>
         </div>

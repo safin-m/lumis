@@ -265,6 +265,19 @@ export class GlassEffect {
   }
 
   /**
+   * Returns a full SVG <svg> element string containing the filter definition for this instance's config.
+   * Includes a usage example for copy-paste.
+   * @public
+   * @returns {string} SVG markup with <filter> definition and example usage
+   */
+  exportSVGFilterMarkup() {
+    const filterId = this.filterId || generateUniqueId();
+    const builder = new SVGFilterBuilder(filterId, this.config);
+    const filterDef = builder.build();
+    return `\n<svg width="0" height="0" style="position:absolute;">\n  ${filterDef}\n</svg>\n\n<!-- Usage example: -->\n<div style=\"filter:url(#${filterId});\">\n  <!-- Your content here -->\n</div>\n`;
+  }
+
+  /**
    * Creates a global style element for the pseudo-element shine effect
    * Uses CSS custom properties for dynamic control of background and shadow
    *
