@@ -139,6 +139,17 @@ export class GlassEffect {
     document.body.appendChild(svg);
     this.stackedDistortionSVG = svg;
 
+    // Build and set the displacement map for the clone's filter
+    const cloneFeImage = svg.querySelector(`.${SELECTORS.FE_IMAGE.slice(1)}`);
+    if (cloneFeImage) {
+      const displacementMap = this.buildDisplacementMap();
+      cloneFeImage.setAttributeNS(
+        "http://www.w3.org/1999/xlink",
+        "href",
+        displacementMap
+      );
+    }
+
     // Apply the new filter to the clone
 
     clone.style.position = "absolute";
@@ -148,6 +159,7 @@ export class GlassEffect {
     clone.style.height = `${this.element.offsetHeight}px`;
     clone.style.zIndex = 99999;
     clone.style.pointerEvents = "none";
+    clone.style.backdropFilter = `url(#${stackedFilterId})`;
 
     // Insert the clone as a sibling after the original
     this.element.parentNode.insertBefore(clone, this.element.nextSibling);
