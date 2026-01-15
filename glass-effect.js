@@ -189,7 +189,6 @@ export class GlassEffect {
       edgeMask,
       edgeMaskPreserveDistortion,
       edgeMaskArithmeticBlend,
-      aberrationIntensity,
       mode,
     } = this.config;
 
@@ -211,7 +210,6 @@ export class GlassEffect {
       edgeMask,
       edgeMaskPreserveDistortion,
       edgeMaskArithmeticBlend,
-      aberrationIntensity,
       mode,
     });
 

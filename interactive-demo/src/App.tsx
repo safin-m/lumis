@@ -14,7 +14,6 @@ const initialConfig: DemoConfig = {
   edgeMask: false,
   edgeMaskPreserveDistortion: false,
   edgeMaskArithmeticBlend: false,
-  aberrationIntensity: 2,
 
   interactions: {
     enabled: true,

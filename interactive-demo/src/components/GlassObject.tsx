@@ -100,7 +100,6 @@ export function GlassObject({
     config.edgeMask,
     config.edgeMaskPreserveDistortion,
     config.edgeMaskArithmeticBlend,
-    config.aberrationIntensity,
   ]);
 
   // Update config when it changes

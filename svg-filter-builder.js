@@ -32,7 +32,6 @@ export class SVGFilterBuilder {
    * @param {number} config.displace - Output blur amount
    * @param {boolean} config.edgeMask - Enable edge-only aberration
    * @param {boolean} config.edgeMaskPreserveDistortion - Keep center distortion with edge mask
-   * @param {number} config.aberrationIntensity - Edge mask strength (2-10)
    * @param {string} config.mode - "standard" or "shader"
    */
   constructor(filterId, config) {
@@ -94,7 +93,7 @@ export class SVGFilterBuilder {
     const blueClass = SELECTORS.BLUE_CHANNEL.slice(1);
     const blurClass = SELECTORS.OUTPUT_BLUR.slice(1);
 
-    const { edgeMask, aberrationIntensity, mode } = this.config;
+    const { edgeMask, mode } = this.config;
     const { scale, r, g, b, displace } = this.config;
 
     // Calculate scale values for each channel
@@ -129,9 +128,7 @@ export class SVGFilterBuilder {
           <feComponentTransfer in="edgeIntensity" result="edgeMask" class="${SELECTORS.EDGE_MASK.slice(
             1
           )}">
-            <feFuncA type="discrete" tableValues="0 ${
-              aberrationIntensity * 0.05
-            } 1"/>
+            <feFuncA type="discrete" tableValues="0 ${2 * 0.05} 1"/>
           </feComponentTransfer>
           `
               : ""
@@ -177,7 +174,7 @@ export class SVGFilterBuilder {
           <!-- Slight blur on aberrated result for smoother transition -->
           <feGaussianBlur in="rgb" stdDeviation="${Math.max(
             0.1,
-            0.5 - aberrationIntensity * 0.1
+            0.5 - 2 * 0.1
           )}" result="aberratedBlurred"/>
           
           <!-- Composite aberration with edge mask -->

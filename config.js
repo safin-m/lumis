@@ -59,10 +59,6 @@ export const baseConfig = {
    * Creates a unique additive effect, experimental
    * Default: false */
   edgeMaskArithmeticBlend: false,
-  /** Edge mask strength - controls how much aberration at edges
-   * Range: 2-10 (higher = stronger edge effect)
-   * Default: 2 */
-  aberrationIntensity: 2,
 
   // ===== Mouse Interactions =====
 

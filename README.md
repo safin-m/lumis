@@ -56,11 +56,10 @@ npm install glass-effect
 
 ### Display Modes
 
-| Parameter             | Type    | Default    | Description                                                              |
-| --------------------- | ------- | ---------- | ------------------------------------------------------------------------ |
-| `mode`                | string  | "standard" | Display mode: "standard" or "shader" (CPU-generated liquid displacement) |
-| `edgeMask`            | boolean | false      | Enable edge-only chromatic aberration (keeps center clean)               |
-| `aberrationIntensity` | number  | 2          | Edge mask strength when edgeMask is enabled                              |
+| Parameter  | Type    | Default    | Description                                                              |
+| ---------- | ------- | ---------- | ------------------------------------------------------------------------ |
+| `mode`     | string  | "standard" | Display mode: "standard" or "shader" (CPU-generated liquid displacement) |
+| `edgeMask` | boolean | false      | Enable edge-only chromatic aberration (keeps center clean)               |
 
 ### Mouse Interactions
 
@@ -294,7 +293,6 @@ new GlassEffect(element, {
 ```javascript
 new GlassEffect(element, {
   edgeMask: true,
-  aberrationIntensity: 5,
   backdropBlur: 0.05,
 });
 ```

@@ -9,7 +9,6 @@ export interface GlassConfig {
   edgeMask: boolean;
   edgeMaskPreserveDistortion: boolean;
   edgeMaskArithmeticBlend: boolean;
-  aberrationIntensity: number;
 
   interactions: {
     enabled: boolean;
