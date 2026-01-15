@@ -426,7 +426,7 @@ export class GlassEffect {
    * @private
    */
   updateFilterAttributes() {
-    const { width, height, scale, r, g, b, displace } = this.config;
+    const { width, height, scale, r, g, b, displace, x, y } = this.config;
 
     // Set displacement map dimensions to match element size
     this.feImage.setAttribute("width", width);
@@ -437,6 +437,15 @@ export class GlassEffect {
     this.redChannel.setAttribute("scale", scale + r);
     this.greenChannel.setAttribute("scale", scale + g);
     this.blueChannel.setAttribute("scale", scale + b);
+
+    this.redChannel.setAttribute("xChannelSelector", x);
+    this.redChannel.setAttribute("yChannelSelector", y);
+
+    this.greenChannel.setAttribute("xChannelSelector", x);
+    this.greenChannel.setAttribute("yChannelSelector", y);
+
+    this.blueChannel.setAttribute("xChannelSelector", x);
+    this.blueChannel.setAttribute("yChannelSelector", y);
 
     // Set output blur amount for smoothing the displaced result
     // Only exists when edgeMask is disabled
