@@ -5,15 +5,16 @@ interface GlassObjectProps {
   config: DemoConfig;
   position: { x: number; y: number };
   onPositionChange: (position: { x: number; y: number }) => void;
+  glassEffectRef: React.MutableRefObject<any>;
 }
 
 export function GlassObject({
   config,
   position,
   onPositionChange,
+  glassEffectRef,
 }: GlassObjectProps) {
   const glassRef = useRef<HTMLDivElement>(null);
-  const glassEffectRef = useRef<any>(null);
   const isDragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
 

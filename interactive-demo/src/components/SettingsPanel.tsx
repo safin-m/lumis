@@ -26,6 +26,7 @@ function rgbaString(color: string) {
 interface SettingsPanelProps {
   config: DemoConfig;
   onConfigChange: (config: DemoConfig) => void;
+  glassEffectRef: React.MutableRefObject<any>;
 }
 
 function SliderControl({
@@ -94,7 +95,11 @@ function Section({
   );
 }
 
-export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
+export function SettingsPanel({
+  config,
+  onConfigChange,
+  glassEffectRef,
+}: SettingsPanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const updateConfig = (updates: Partial<DemoConfig>) => {
@@ -1039,8 +1044,210 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
               </select>
             </div>
           </Section>
+
+          <Section title="Export Configuration">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-white font-semibold">
+                    JavaScript Config
+                  </Label>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const configCode = generateConfigCode(config);
+                      navigator.clipboard.writeText(configCode);
+                    }}
+                    className="bg-white/10 hover:bg-white/20 text-white"
+                  >
+                    Copy
+                  </Button>
+                </div>
+                <pre className="p-3 bg-black/40 rounded border border-white/10 text-xs text-white overflow-x-auto max-h-[300px] overflow-y-auto">
+                  <code>{generateConfigCode(config)}</code>
+                </pre>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-white font-semibold">
+                    HTML Data Attributes
+                  </Label>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const dataAttrs = generateDataAttributes(config);
+                      navigator.clipboard.writeText(dataAttrs);
+                    }}
+                    className="bg-white/10 hover:bg-white/20 text-white"
+                  >
+                    Copy
+                  </Button>
+                </div>
+                <pre className="p-3 bg-black/40 rounded border border-white/10 text-xs text-white overflow-x-auto max-h-[300px] overflow-y-auto">
+                  <code>{generateDataAttributes(config)}</code>
+                </pre>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-white font-semibold">
+                    SVG Displacement Map
+                  </Label>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const svg = generateSVGCode(config, glassEffectRef);
+                      navigator.clipboard.writeText(svg);
+                    }}
+                    className="bg-white/10 hover:bg-white/20 text-white"
+                  >
+                    Copy
+                  </Button>
+                </div>
+                <pre className="p-3 bg-black/40 rounded border border-white/10 text-xs text-white overflow-x-auto max-h-[300px] overflow-y-auto">
+                  <code>{generateSVGCode(config, glassEffectRef)}</code>
+                </pre>
+              </div>
+            </div>
+          </Section>
         </div>
       )}
     </div>
   );
+}
+
+// Helper functions for code generation
+function generateConfigCode(config: DemoConfig): string {
+  const cleanConfig = {
+    scale: config.scale,
+    radius: config.radius,
+    frost: config.frost,
+    saturation: config.saturation,
+    backdropBlur: config.backdropBlur,
+    overLight: config.overLight,
+    mode: config.mode,
+    ...(config.mode === "shader" && {
+      shaderEdgeFadeStart: config.shaderEdgeFadeStart,
+      shaderEdgeFadeOffset: config.shaderEdgeFadeOffset,
+      shaderCornerRadius: config.shaderCornerRadius,
+      shaderWidthFactor: config.shaderWidthFactor,
+      shaderHeightFactor: config.shaderHeightFactor,
+      shaderEdgeDistanceDivisor: config.shaderEdgeDistanceDivisor,
+    }),
+    edgeMask: config.edgeMask,
+    edgeMaskPreserveDistortion: config.edgeMaskPreserveDistortion,
+    edgeMaskArithmeticBlend: config.edgeMaskArithmeticBlend,
+    border: config.border,
+    lightness: config.lightness,
+    alpha: config.alpha,
+    blur: config.blur,
+    displace: config.displace,
+    blend: config.blend,
+    x: config.x,
+    y: config.y,
+    r: config.r,
+    g: config.g,
+    b: config.b,
+    warp: config.warp,
+    shine: config.shine,
+    hover: config.hover,
+    interactions: config.interactions,
+    overlays: config.overlays,
+  };
+
+  return `const glassConfig = ${JSON.stringify(cleanConfig, null, 2)};
+
+// Usage:
+// new GlassEffect(element, glassConfig);`;
+}
+
+function generateDataAttributes(config: DemoConfig): string {
+  const attrs: string[] = [];
+
+  attrs.push(`data-glass-scale="${config.scale}"`);
+  attrs.push(`data-glass-radius="${config.radius}"`);
+  attrs.push(`data-glass-frost="${config.frost}"`);
+  attrs.push(`data-glass-saturation="${config.saturation}"`);
+  attrs.push(`data-glass-backdrop-blur="${config.backdropBlur}"`);
+  attrs.push(`data-glass-over-light="${config.overLight}"`);
+  attrs.push(`data-glass-mode="${config.mode}"`);
+
+  if (config.mode === "shader") {
+    attrs.push(
+      `data-glass-shader-edge-fade-start="${config.shaderEdgeFadeStart}"`
+    );
+    attrs.push(
+      `data-glass-shader-edge-fade-offset="${config.shaderEdgeFadeOffset}"`
+    );
+    attrs.push(
+      `data-glass-shader-corner-radius="${config.shaderCornerRadius}"`
+    );
+    attrs.push(`data-glass-shader-width-factor="${config.shaderWidthFactor}"`);
+    attrs.push(
+      `data-glass-shader-height-factor="${config.shaderHeightFactor}"`
+    );
+    attrs.push(
+      `data-glass-shader-edge-distance-divisor="${config.shaderEdgeDistanceDivisor}"`
+    );
+  }
+
+  attrs.push(`data-glass-edge-mask="${config.edgeMask}"`);
+  attrs.push(
+    `data-glass-edge-mask-preserve-distortion="${config.edgeMaskPreserveDistortion}"`
+  );
+  attrs.push(
+    `data-glass-edge-mask-arithmetic-blend="${config.edgeMaskArithmeticBlend}"`
+  );
+  attrs.push(`data-glass-border="${config.border}"`);
+  attrs.push(`data-glass-lightness="${config.lightness}"`);
+  attrs.push(`data-glass-alpha="${config.alpha}"`);
+  attrs.push(`data-glass-blur="${config.blur}"`);
+  attrs.push(`data-glass-displace="${config.displace}"`);
+  attrs.push(`data-glass-blend="${config.blend}"`);
+  attrs.push(`data-glass-x="${config.x}"`);
+  attrs.push(`data-glass-y="${config.y}"`);
+  attrs.push(`data-glass-r="${config.r}"`);
+  attrs.push(`data-glass-g="${config.g}"`);
+  attrs.push(`data-glass-b="${config.b}"`);
+
+  return `<div data-glass-effect"\n  ${attrs.join(
+    "\n  "
+  )}>\n  <!-- Your content here -->\n</div>`;
+}
+
+function generateSVGCode(
+  config: DemoConfig,
+  glassEffectRef: React.MutableRefObject<any>
+): string {
+  try {
+    if (!glassEffectRef.current) {
+      return "<!-- Glass effect not initialized yet -->";
+    }
+
+    // Get the displacement map data URL from the glass effect
+    const dataUrl = glassEffectRef.current.cachedDisplacementMap;
+    if (!dataUrl) {
+      return "<!-- Displacement map not generated yet -->";
+    }
+
+    // If it's a data URL with SVG, decode it
+    if (dataUrl.startsWith("data:image/svg+xml,")) {
+      const svgContent = decodeURIComponent(
+        dataUrl.replace("data:image/svg+xml,", "")
+      );
+      return svgContent;
+    }
+
+    // If it's a shader mode (canvas data URL), return info
+    if (dataUrl.startsWith("data:image/png")) {
+      return `<!-- Shader mode uses a canvas-generated PNG data URL.
+   This cannot be exported as static SVG.
+   Data URL: ${dataUrl.substring(0, 100)}... -->`;
+    }
+
+    return dataUrl;
+  } catch (e) {
+    return `<!-- SVG generation error: ${e} -->`;
+  }
 }

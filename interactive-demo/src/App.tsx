@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { GlassObject } from "./components/GlassObject";
 import { SettingsPanel } from "./components/SettingsPanel";
 import type { DemoConfig } from "./types/glass-config";
@@ -115,6 +115,7 @@ const initialConfig: DemoConfig = {
 function App() {
   const [config, setConfig] = useState<DemoConfig>(initialConfig);
   const [position, setPosition] = useState({ x: 200, y: 200 });
+  const glassEffectRef = useRef<any>(null);
 
   return (
     <div className="dark min-h-screen bg-background text-foreground overflow-hidden">
@@ -157,10 +158,15 @@ function App() {
           config={config}
           position={position}
           onPositionChange={setPosition}
+          glassEffectRef={glassEffectRef}
         />
       </div>
 
-      <SettingsPanel config={config} onConfigChange={setConfig} />
+      <SettingsPanel
+        config={config}
+        onConfigChange={setConfig}
+        glassEffectRef={glassEffectRef}
+      />
     </div>
   );
 }
