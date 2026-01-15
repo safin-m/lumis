@@ -13,6 +13,8 @@ import { ChevronDown, ChevronUp, Settings } from "lucide-react";
 import { useState } from "react";
 import { ColorPickerCustom } from "./ColorPickerCustom";
 import { GradientPicker } from "./GradientPicker";
+import "./settings-panel-scrollbar.css";
+
 // Helper for rgba string
 function rgbaString(color: string) {
   const match = color.match(/^(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?$/);
