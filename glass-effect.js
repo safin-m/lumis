@@ -201,8 +201,6 @@ export class GlassEffect {
       syncScheduled = true;
 
       requestAnimationFrame(() => {
-        // If element has explicit style position, use it (React case)
-        // Otherwise, use offsetTop/offsetLeft (index.html case)
         if (this.element.style.top) {
           clone.style.top = this.element.style.top;
         } else {
