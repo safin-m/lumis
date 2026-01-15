@@ -1097,7 +1097,7 @@ export function SettingsPanel({
                   <Button
                     size="sm"
                     onClick={() => {
-                      const svg = generateSVGCode(config, glassEffectRef);
+                      const svg = generateSVGCode(glassEffectRef);
                       navigator.clipboard.writeText(svg);
                     }}
                     className="bg-white/10 hover:bg-white/20 text-white"
@@ -1106,7 +1106,7 @@ export function SettingsPanel({
                   </Button>
                 </div>
                 <pre className="p-3 bg-black/40 rounded border border-white/10 text-xs text-white overflow-x-auto max-h-[300px] overflow-y-auto">
-                  <code>{generateSVGCode(config, glassEffectRef)}</code>
+                  <code>{generateSVGCode(glassEffectRef)}</code>
                 </pre>
               </div>
             </div>
@@ -1216,10 +1216,7 @@ function generateDataAttributes(config: DemoConfig): string {
   )}>\n  <!-- Your content here -->\n</div>`;
 }
 
-function generateSVGCode(
-  config: DemoConfig,
-  glassEffectRef: React.MutableRefObject<any>
-): string {
+function generateSVGCode(glassEffectRef: React.MutableRefObject<any>): string {
   try {
     if (!glassEffectRef.current) {
       return "<!-- Glass effect not initialized yet -->";
