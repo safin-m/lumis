@@ -109,7 +109,7 @@ export class GlassEffect {
    * generating a new SVG filter, and positioning the clone on top.
    */
   createStackedDistortionClone() {
-    // Remove previous clone if it exists
+    // Remove previous clone if it exists (ensure only one clone)
     if (this.stackedDistortionClone) {
       this.stackedDistortionClone.remove();
       this.stackedDistortionClone = null;
@@ -117,6 +117,10 @@ export class GlassEffect {
     if (this.stackedDistortionSVG) {
       this.stackedDistortionSVG.remove();
       this.stackedDistortionSVG = null;
+    }
+    if (this.stackedDistortionObserver) {
+      this.stackedDistortionObserver.disconnect();
+      this.stackedDistortionObserver = null;
     }
 
     // Deep clone the glass element (without event listeners)
@@ -163,11 +167,40 @@ export class GlassEffect {
 
     // Insert the clone as a sibling after the original
     this.element.parentNode.insertBefore(clone, this.element.nextSibling);
-    //set backdropfilter blur to 0
-    // clone.style.backdropFilter = `url(#${stackedFilterId}) blur(0px)`;
     this.stackedDistortionClone = clone;
-    // Debug: log to console
-    // console.log('[GlassEffect] Stacked distortion clone created', clone, svg);
+
+    // Set up MutationObserver to sync clone with original element
+    const syncClone = () => {
+      // If element has explicit style position, use it (React case)
+      // Otherwise, use offsetTop/offsetLeft (index.html case)
+      if (this.element.style.top) {
+        clone.style.top = this.element.style.top;
+      } else {
+        clone.style.top = `${this.element.offsetTop}px`;
+      }
+
+      if (this.element.style.left) {
+        clone.style.left = this.element.style.left;
+      } else {
+        clone.style.left = `${this.element.offsetLeft}px`;
+      }
+
+      clone.style.width =
+        this.element.style.width || `${this.element.offsetWidth}px`;
+      clone.style.height =
+        this.element.style.height || `${this.element.offsetHeight}px`;
+      clone.style.transform = this.element.style.transform;
+    };
+
+    // Initial sync
+    syncClone();
+
+    // Observe style changes on the original element
+    this.stackedDistortionObserver = new MutationObserver(syncClone);
+    this.stackedDistortionObserver.observe(this.element, {
+      attributes: true,
+      attributeFilter: ["style"],
+    });
   }
 
   /**
@@ -976,6 +1009,20 @@ export class GlassEffect {
 
     // Remove SVG filter from DOM
     if (this.svgElement) this.svgElement.remove();
+
+    // Clean up stacked distortion clone
+    if (this.stackedDistortionClone) {
+      this.stackedDistortionClone.remove();
+      this.stackedDistortionClone = null;
+    }
+    if (this.stackedDistortionSVG) {
+      this.stackedDistortionSVG.remove();
+      this.stackedDistortionSVG = null;
+    }
+    if (this.stackedDistortionObserver) {
+      this.stackedDistortionObserver.disconnect();
+      this.stackedDistortionObserver = null;
+    }
 
     // Clear caches to free memory
     this.cachedDisplacementMap = null;
