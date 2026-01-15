@@ -150,6 +150,7 @@ export class GlassEffect {
 
     // Generate a new unique filter ID
     const stackedFilterId = generateUniqueId();
+    this.stackedFilterId = stackedFilterId;
 
     // Create a new SVG filter for the clone
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -235,6 +236,35 @@ export class GlassEffect {
       attributes: true,
       attributeFilter: ["style"],
     });
+  }
+
+  /**
+   * Updates the stacked distortion clone's SVG filter
+   * Rebuilds the filter with current dimensions and displacement map
+   * @private
+   */
+  updateStackedDistortionSVG() {
+    if (!this.stackedDistortionSVG || !this.stackedFilterId) return;
+
+    // Rebuild the SVG filter with current config
+    const filterBuilder = new SVGFilterBuilder(
+      this.stackedFilterId,
+      this.config
+    );
+    this.stackedDistortionSVG.innerHTML = filterBuilder.build();
+
+    // Update the displacement map with current dimensions
+    const cloneFeImage = this.stackedDistortionSVG.querySelector(
+      `.${SELECTORS.FE_IMAGE.slice(1)}`
+    );
+    if (cloneFeImage) {
+      const displacementMap = this.buildDisplacementMap();
+      cloneFeImage.setAttributeNS(
+        "http://www.w3.org/1999/xlink",
+        "href",
+        displacementMap
+      );
+    }
   }
 
   /**
@@ -920,6 +950,7 @@ export class GlassEffect {
       this.updateFilterAttributes();
       this.applyElementStyles();
       this.setupHoverEffects();
+      this.updateStackedDistortionSVG();
       this.updateScheduled = false;
     });
   }
