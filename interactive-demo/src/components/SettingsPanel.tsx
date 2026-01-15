@@ -268,22 +268,33 @@ export function SettingsPanel({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-white">Mode</Label>
-                <select
-                  value={config.mode}
-                  onChange={(e) =>
-                    updateConfig({
-                      mode: e.target.value as "standard" | "shader",
-                    })
-                  }
-                  className="h-9 rounded border border-white/20 bg-black/30 px-3 text-white text-sm"
-                >
-                  <option value="standard" className="bg-black/90 text-white">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-xs ${
+                      config.mode === "standard"
+                        ? "text-white"
+                        : "text-white/40"
+                    }`}
+                  >
                     Standard
-                  </option>
-                  <option value="shader" className="bg-black/90 text-white">
+                  </span>
+                  <Switch
+                    checked={config.mode === "shader"}
+                    onChange={(e) =>
+                      updateConfig({
+                        mode: e.target.checked ? "shader" : "standard",
+                      })
+                    }
+                    className="h-6 w-11"
+                  />
+                  <span
+                    className={`text-xs ${
+                      config.mode === "shader" ? "text-white" : "text-white/40"
+                    }`}
+                  >
                     Shader
-                  </option>
-                </select>
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -433,64 +444,8 @@ export function SettingsPanel({
 
           <Section title="Overlays">
             <div className="space-y-2">
-              <Label className="text-white">Hover Overlay Blend Mode</Label>
-              <select
-                className="w-full rounded border border-white/20 bg-black/30 px-2 py-1 text-white text-sm"
-                value={config.overlays.hoverOverlayBlendMode || "overlay"}
-                onChange={(e) =>
-                  updateNestedConfig("overlays", {
-                    hoverOverlayBlendMode: e.target.value,
-                  })
-                }
-              >
-                <option value="overlay" className="bg-black/90 text-white">
-                  Overlay (default)
-                </option>
-                <option value="normal" className="bg-black/90 text-white">
-                  Normal
-                </option>
-                <option value="multiply" className="bg-black/90 text-white">
-                  Multiply
-                </option>
-                <option value="screen" className="bg-black/90 text-white">
-                  Screen
-                </option>
-                <option value="color" className="bg-black/90 text-white">
-                  Color
-                </option>
-                <option value="color-dodge" className="bg-black/90 text-white">
-                  Color Dodge
-                </option>
-                <option value="color-burn" className="bg-black/90 text-white">
-                  Color Burn
-                </option>
-                <option value="darken" className="bg-black/90 text-white">
-                  Darken
-                </option>
-                <option value="lighten" className="bg-black/90 text-white">
-                  Lighten
-                </option>
-                <option value="difference" className="bg-black/90 text-white">
-                  Difference
-                </option>
-                <option value="exclusion" className="bg-black/90 text-white">
-                  Exclusion
-                </option>
-                <option value="hue" className="bg-black/90 text-white">
-                  Hue
-                </option>
-                <option value="saturation" className="bg-black/90 text-white">
-                  Saturation
-                </option>
-                <option value="luminosity" className="bg-black/90 text-white">
-                  Luminosity
-                </option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="text-white">Enabled</Label>
+                <Label className="text-white">Enable Overlays</Label>
                 <Switch
                   checked={config.overlays.enabled}
                   onChange={(e) =>
@@ -502,369 +457,460 @@ export function SettingsPanel({
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-white">Advanced Border</Label>
-                <Switch
-                  checked={config.overlays.advancedBorder}
-                  onChange={(e) =>
-                    updateNestedConfig("overlays", {
-                      advancedBorder: e.target.checked,
-                    })
-                  }
-                  className="h-6 w-11"
-                />
-              </div>
-            </div>
-            <ColorPickerCustom
-              label="Border Color"
-              value={config.overlays.borderColor}
-              onChange={(v) =>
-                updateNestedConfig("overlays", { borderColor: v })
-              }
-            />
-            <SliderControl
-              label="Border Thickness"
-              value={config.overlays.borderThickness}
-              onChange={(v) =>
-                updateNestedConfig("overlays", { borderThickness: v })
-              }
-              min={0.5}
-              max={5}
-            />
-            <ColorPickerCustom
-              label="Hover Overlay 1 Light Color"
-              value={config.overlays.hoverOverlay1LightColor}
-              onChange={(v) =>
-                updateNestedConfig("overlays", { hoverOverlay1LightColor: v })
-              }
-            />
-            <SliderControl
-              label="Hover Overlay 1 Angle"
-              value={config.overlays.hoverOverlay1Angle}
-              onChange={(v) =>
-                updateNestedConfig("overlays", { hoverOverlay1Angle: v })
-              }
-              min={0}
-              max={360}
-              step={1}
-            />
-            <SliderControl
-              label="Hover Overlay 1 Opacity"
-              value={config.overlays.hoverOverlay1Opacity}
-              onChange={(v) =>
-                updateNestedConfig("overlays", { hoverOverlay1Opacity: v })
-              }
-              min={0}
-              max={1}
-            />
-            <ColorPickerCustom
-              label="Hover Overlay 2 Light Color"
-              value={config.overlays.hoverOverlay2LightColor}
-              onChange={(v) =>
-                updateNestedConfig("overlays", { hoverOverlay2LightColor: v })
-              }
-            />
-            <SliderControl
-              label="Hover Overlay 2 Angle"
-              value={config.overlays.hoverOverlay2Angle}
-              onChange={(v) =>
-                updateNestedConfig("overlays", { hoverOverlay2Angle: v })
-              }
-              min={0}
-              max={360}
-              step={1}
-            />
-            <SliderControl
-              label="Hover Overlay 2 Opacity"
-              value={config.overlays.hoverOverlay2Opacity}
-              onChange={(v) =>
-                updateNestedConfig("overlays", { hoverOverlay2Opacity: v })
-              }
-              min={0}
-              max={1}
-            />
+            {config.overlays.enabled && (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-white">Hover Overlay Blend Mode</Label>
+                  <select
+                    className="w-full rounded border border-white/20 bg-black/30 px-2 py-1 text-white text-sm"
+                    value={config.overlays.hoverOverlayBlendMode || "overlay"}
+                    onChange={(e) =>
+                      updateNestedConfig("overlays", {
+                        hoverOverlayBlendMode: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="overlay" className="bg-black/90 text-white">
+                      Overlay (default)
+                    </option>
+                    <option value="normal" className="bg-black/90 text-white">
+                      Normal
+                    </option>
+                    <option value="multiply" className="bg-black/90 text-white">
+                      Multiply
+                    </option>
+                    <option value="screen" className="bg-black/90 text-white">
+                      Screen
+                    </option>
+                    <option value="color" className="bg-black/90 text-white">
+                      Color
+                    </option>
+                    <option
+                      value="color-dodge"
+                      className="bg-black/90 text-white"
+                    >
+                      Color Dodge
+                    </option>
+                    <option
+                      value="color-burn"
+                      className="bg-black/90 text-white"
+                    >
+                      Color Burn
+                    </option>
+                    <option value="darken" className="bg-black/90 text-white">
+                      Darken
+                    </option>
+                    <option value="lighten" className="bg-black/90 text-white">
+                      Lighten
+                    </option>
+                    <option
+                      value="difference"
+                      className="bg-black/90 text-white"
+                    >
+                      Difference
+                    </option>
+                    <option
+                      value="exclusion"
+                      className="bg-black/90 text-white"
+                    >
+                      Exclusion
+                    </option>
+                    <option value="hue" className="bg-black/90 text-white">
+                      Hue
+                    </option>
+                    <option
+                      value="saturation"
+                      className="bg-black/90 text-white"
+                    >
+                      Saturation
+                    </option>
+                    <option
+                      value="luminosity"
+                      className="bg-black/90 text-white"
+                    >
+                      Luminosity
+                    </option>
+                  </select>
+                </div>
 
-            {config.overlays.enabled && config.overlays.advancedBorder && (
-              <Section title="Border Gradient" defaultOpen={false}>
-                <SliderControl
-                  label="Start Base"
-                  value={config.hover.borderGradient.startBase}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-white">Advanced Border</Label>
+                    <Switch
+                      checked={config.overlays.advancedBorder}
+                      onChange={(e) =>
+                        updateNestedConfig("overlays", {
+                          advancedBorder: e.target.checked,
+                        })
+                      }
+                      className="h-6 w-11"
+                    />
+                  </div>
+                </div>
+                <ColorPickerCustom
+                  label="Border Color"
+                  value={config.overlays.borderColor}
                   onChange={(v) =>
-                    updateNestedConfig("hover", {
-                      borderGradient: {
-                        ...config.hover.borderGradient,
-                        startBase: v,
-                      },
-                    })
+                    updateNestedConfig("overlays", { borderColor: v })
                   }
-                  min={0}
-                  max={100}
-                  step={1}
                 />
                 <SliderControl
-                  label="Start Offset Multiplier"
-                  value={config.hover.borderGradient.startOffsetMultiplier}
+                  label="Border Thickness"
+                  value={config.overlays.borderThickness}
                   onChange={(v) =>
-                    updateNestedConfig("hover", {
-                      borderGradient: {
-                        ...config.hover.borderGradient,
-                        startOffsetMultiplier: v,
-                      },
+                    updateNestedConfig("overlays", { borderThickness: v })
+                  }
+                  min={0.5}
+                  max={5}
+                />
+                <ColorPickerCustom
+                  label="Hover Overlay 1 Light Color"
+                  value={config.overlays.hoverOverlay1LightColor}
+                  onChange={(v) =>
+                    updateNestedConfig("overlays", {
+                      hoverOverlay1LightColor: v,
                     })
                   }
-                  min={0}
-                  max={1}
-                  step={0.05}
                 />
                 <SliderControl
-                  label="End Base"
-                  value={config.hover.borderGradient.endBase}
+                  label="Hover Overlay 1 Angle"
+                  value={config.overlays.hoverOverlay1Angle}
                   onChange={(v) =>
-                    updateNestedConfig("hover", {
-                      borderGradient: {
-                        ...config.hover.borderGradient,
-                        endBase: v,
-                      },
-                    })
-                  }
-                  min={0}
-                  max={100}
-                  step={1}
-                />
-                <SliderControl
-                  label="End Offset Multiplier"
-                  value={config.hover.borderGradient.endOffsetMultiplier}
-                  onChange={(v) =>
-                    updateNestedConfig("hover", {
-                      borderGradient: {
-                        ...config.hover.borderGradient,
-                        endOffsetMultiplier: v,
-                      },
-                    })
-                  }
-                  min={0}
-                  max={1}
-                  step={0.05}
-                />
-                <SliderControl
-                  label="Opacity Base"
-                  value={config.hover.borderGradient.opacityBase}
-                  onChange={(v) =>
-                    updateNestedConfig("hover", {
-                      borderGradient: {
-                        ...config.hover.borderGradient,
-                        opacityBase: v,
-                      },
-                    })
-                  }
-                  min={0}
-                  max={1}
-                  step={0.01}
-                />
-                <SliderControl
-                  label="Opacity Multiplier"
-                  value={config.hover.borderGradient.opacityMultiplier}
-                  onChange={(v) =>
-                    updateNestedConfig("hover", {
-                      borderGradient: {
-                        ...config.hover.borderGradient,
-                        opacityMultiplier: v,
-                      },
-                    })
-                  }
-                  min={0}
-                  max={0.05}
-                  step={0.001}
-                />
-                <SliderControl
-                  label="Peak Opacity Base"
-                  value={config.hover.borderGradient.peakOpacityBase}
-                  onChange={(v) =>
-                    updateNestedConfig("hover", {
-                      borderGradient: {
-                        ...config.hover.borderGradient,
-                        peakOpacityBase: v,
-                      },
-                    })
-                  }
-                  min={0}
-                  max={1}
-                  step={0.01}
-                />
-                <SliderControl
-                  label="Peak Opacity Multiplier"
-                  value={config.hover.borderGradient.peakOpacityMultiplier}
-                  onChange={(v) =>
-                    updateNestedConfig("hover", {
-                      borderGradient: {
-                        ...config.hover.borderGradient,
-                        peakOpacityMultiplier: v,
-                      },
-                    })
-                  }
-                  min={0}
-                  max={0.05}
-                  step={0.001}
-                />
-                <SliderControl
-                  label="Secondary Boost"
-                  value={config.hover.borderGradient.secondaryBoost}
-                  onChange={(v) =>
-                    updateNestedConfig("hover", {
-                      borderGradient: {
-                        ...config.hover.borderGradient,
-                        secondaryBoost: v,
-                      },
-                    })
-                  }
-                  min={0}
-                  max={0.5}
-                  step={0.01}
-                />
-                <SliderControl
-                  label="Angle Base"
-                  value={config.hover.borderGradient.angleBase}
-                  onChange={(v) =>
-                    updateNestedConfig("hover", {
-                      borderGradient: {
-                        ...config.hover.borderGradient,
-                        angleBase: v,
-                      },
-                    })
+                    updateNestedConfig("overlays", { hoverOverlay1Angle: v })
                   }
                   min={0}
                   max={360}
                   step={1}
                 />
                 <SliderControl
-                  label="Angle Multiplier"
-                  value={config.hover.borderGradient.angleMultiplier}
+                  label="Hover Overlay 1 Opacity"
+                  value={config.overlays.hoverOverlay1Opacity}
                   onChange={(v) =>
-                    updateNestedConfig("hover", {
-                      borderGradient: {
-                        ...config.hover.borderGradient,
-                        angleMultiplier: v,
-                      },
-                    })
-                  }
-                  min={0}
-                  max={5}
-                  step={0.1}
-                />
-              </Section>
-            )}
-
-            <Section title="Additive Overlay" defaultOpen={false}>
-              <Label className="text-white font-semibold">Extra Overlay</Label>
-              <div className="flex items-center justify-between">
-                <Label className="text-white">Enabled</Label>
-                <Switch
-                  checked={config.overlays.extraOverlay?.enabled || false}
-                  onChange={(e) =>
-                    updateNestedConfig("overlays", {
-                      extraOverlay: {
-                        ...config.overlays.extraOverlay,
-                        enabled: e.target.checked,
-                      },
-                    })
-                  }
-                  className="h-6 w-11"
-                />
-              </div>
-              <div>
-                <Label className="text-white">Background Gradient</Label>
-                <GradientPicker
-                  label=""
-                  value={
-                    config.overlays.extraOverlay?.gradient || {
-                      color1: "186, 85, 211, 0.4",
-                      color2: "255, 0, 255, 0.3",
-                      angle: 135,
-                      type: "radial",
-                    }
-                  }
-                  onChange={(gradient) => {
-                    // Compose CSS gradient string
-                    let background = "";
-                    if (gradient.type === "radial") {
-                      background = `radial-gradient(circle at center, ${rgbaString(
-                        gradient.color1
-                      )} 0%, ${rgbaString(gradient.color2)} 100%)`;
-                    } else {
-                      background = `linear-gradient(${
-                        gradient.angle
-                      }deg, ${rgbaString(gradient.color1)} 0%, ${rgbaString(
-                        gradient.color2
-                      )} 100%)`;
-                    }
-                    updateNestedConfig("overlays", {
-                      extraOverlay: {
-                        ...config.overlays.extraOverlay,
-                        background,
-                        gradient,
-                      },
-                    });
-                  }}
-                />
-              </div>
-              <div>
-                <Label className="text-white">Opacity</Label>
-                <SliderControl
-                  label=""
-                  value={
-                    typeof config.overlays.extraOverlay?.opacity === "number"
-                      ? config.overlays.extraOverlay.opacity
-                      : 1
-                  }
-                  onChange={(v) =>
-                    updateNestedConfig("overlays", {
-                      extraOverlay: {
-                        ...config.overlays.extraOverlay,
-                        opacity: v,
-                      },
-                    })
+                    updateNestedConfig("overlays", { hoverOverlay1Opacity: v })
                   }
                   min={0}
                   max={1}
-                  step={0.01}
                 />
-              </div>
-              <div>
-                <Label className="text-white">Blend Mode</Label>
-                <select
-                  className="w-full rounded border border-white/20 bg-black/30 px-2 py-1 text-white text-sm mt-1"
-                  value={config.overlays.extraOverlay?.blendMode || "color"}
-                  onChange={(e) =>
+                <ColorPickerCustom
+                  label="Hover Overlay 2 Light Color"
+                  value={config.overlays.hoverOverlay2LightColor}
+                  onChange={(v) =>
                     updateNestedConfig("overlays", {
-                      extraOverlay: {
-                        ...config.overlays.extraOverlay,
-                        blendMode: e.target.value,
-                      },
+                      hoverOverlay2LightColor: v,
                     })
                   }
-                >
-                  <option value="color" className="bg-black/90 text-white">
-                    Color (default)
-                  </option>
-                  <option value="hue" className="bg-black/90 text-white">
-                    Hue
-                  </option>
-                  <option value="overlay" className="bg-black/90 text-white">
-                    Overlay
-                  </option>
-                  <option value="screen" className="bg-black/90 text-white">
-                    Screen
-                  </option>
-                  <option value="multiply" className="bg-black/90 text-white">
-                    Multiply
-                  </option>
-                  <option value="normal" className="bg-black/90 text-white">
-                    Normal
-                  </option>
-                </select>
-              </div>
-            </Section>
+                />
+                <SliderControl
+                  label="Hover Overlay 2 Angle"
+                  value={config.overlays.hoverOverlay2Angle}
+                  onChange={(v) =>
+                    updateNestedConfig("overlays", { hoverOverlay2Angle: v })
+                  }
+                  min={0}
+                  max={360}
+                  step={1}
+                />
+                <SliderControl
+                  label="Hover Overlay 2 Opacity"
+                  value={config.overlays.hoverOverlay2Opacity}
+                  onChange={(v) =>
+                    updateNestedConfig("overlays", { hoverOverlay2Opacity: v })
+                  }
+                  min={0}
+                  max={1}
+                />
+
+                {config.overlays.enabled && config.overlays.advancedBorder && (
+                  <Section title="Border Gradient" defaultOpen={false}>
+                    <SliderControl
+                      label="Start Base"
+                      value={config.hover.borderGradient.startBase}
+                      onChange={(v) =>
+                        updateNestedConfig("hover", {
+                          borderGradient: {
+                            ...config.hover.borderGradient,
+                            startBase: v,
+                          },
+                        })
+                      }
+                      min={0}
+                      max={100}
+                      step={1}
+                    />
+                    <SliderControl
+                      label="Start Offset Multiplier"
+                      value={config.hover.borderGradient.startOffsetMultiplier}
+                      onChange={(v) =>
+                        updateNestedConfig("hover", {
+                          borderGradient: {
+                            ...config.hover.borderGradient,
+                            startOffsetMultiplier: v,
+                          },
+                        })
+                      }
+                      min={0}
+                      max={1}
+                      step={0.05}
+                    />
+                    <SliderControl
+                      label="End Base"
+                      value={config.hover.borderGradient.endBase}
+                      onChange={(v) =>
+                        updateNestedConfig("hover", {
+                          borderGradient: {
+                            ...config.hover.borderGradient,
+                            endBase: v,
+                          },
+                        })
+                      }
+                      min={0}
+                      max={100}
+                      step={1}
+                    />
+                    <SliderControl
+                      label="End Offset Multiplier"
+                      value={config.hover.borderGradient.endOffsetMultiplier}
+                      onChange={(v) =>
+                        updateNestedConfig("hover", {
+                          borderGradient: {
+                            ...config.hover.borderGradient,
+                            endOffsetMultiplier: v,
+                          },
+                        })
+                      }
+                      min={0}
+                      max={1}
+                      step={0.05}
+                    />
+                    <SliderControl
+                      label="Opacity Base"
+                      value={config.hover.borderGradient.opacityBase}
+                      onChange={(v) =>
+                        updateNestedConfig("hover", {
+                          borderGradient: {
+                            ...config.hover.borderGradient,
+                            opacityBase: v,
+                          },
+                        })
+                      }
+                      min={0}
+                      max={1}
+                      step={0.01}
+                    />
+                    <SliderControl
+                      label="Opacity Multiplier"
+                      value={config.hover.borderGradient.opacityMultiplier}
+                      onChange={(v) =>
+                        updateNestedConfig("hover", {
+                          borderGradient: {
+                            ...config.hover.borderGradient,
+                            opacityMultiplier: v,
+                          },
+                        })
+                      }
+                      min={0}
+                      max={0.05}
+                      step={0.001}
+                    />
+                    <SliderControl
+                      label="Peak Opacity Base"
+                      value={config.hover.borderGradient.peakOpacityBase}
+                      onChange={(v) =>
+                        updateNestedConfig("hover", {
+                          borderGradient: {
+                            ...config.hover.borderGradient,
+                            peakOpacityBase: v,
+                          },
+                        })
+                      }
+                      min={0}
+                      max={1}
+                      step={0.01}
+                    />
+                    <SliderControl
+                      label="Peak Opacity Multiplier"
+                      value={config.hover.borderGradient.peakOpacityMultiplier}
+                      onChange={(v) =>
+                        updateNestedConfig("hover", {
+                          borderGradient: {
+                            ...config.hover.borderGradient,
+                            peakOpacityMultiplier: v,
+                          },
+                        })
+                      }
+                      min={0}
+                      max={0.05}
+                      step={0.001}
+                    />
+                    <SliderControl
+                      label="Secondary Boost"
+                      value={config.hover.borderGradient.secondaryBoost}
+                      onChange={(v) =>
+                        updateNestedConfig("hover", {
+                          borderGradient: {
+                            ...config.hover.borderGradient,
+                            secondaryBoost: v,
+                          },
+                        })
+                      }
+                      min={0}
+                      max={0.5}
+                      step={0.01}
+                    />
+                    <SliderControl
+                      label="Angle Base"
+                      value={config.hover.borderGradient.angleBase}
+                      onChange={(v) =>
+                        updateNestedConfig("hover", {
+                          borderGradient: {
+                            ...config.hover.borderGradient,
+                            angleBase: v,
+                          },
+                        })
+                      }
+                      min={0}
+                      max={360}
+                      step={1}
+                    />
+                    <SliderControl
+                      label="Angle Multiplier"
+                      value={config.hover.borderGradient.angleMultiplier}
+                      onChange={(v) =>
+                        updateNestedConfig("hover", {
+                          borderGradient: {
+                            ...config.hover.borderGradient,
+                            angleMultiplier: v,
+                          },
+                        })
+                      }
+                      min={0}
+                      max={5}
+                      step={0.1}
+                    />
+                  </Section>
+                )}
+
+                <Section title="Additive Overlay" defaultOpen={false}>
+                  <Label className="text-white font-semibold">
+                    Extra Overlay
+                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-white">Enabled</Label>
+                    <Switch
+                      checked={config.overlays.extraOverlay?.enabled || false}
+                      onChange={(e) =>
+                        updateNestedConfig("overlays", {
+                          extraOverlay: {
+                            ...config.overlays.extraOverlay,
+                            enabled: e.target.checked,
+                          },
+                        })
+                      }
+                      className="h-6 w-11"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white">Background Gradient</Label>
+                    <GradientPicker
+                      label=""
+                      value={
+                        config.overlays.extraOverlay?.gradient || {
+                          color1: "186, 85, 211, 0.4",
+                          color2: "255, 0, 255, 0.3",
+                          angle: 135,
+                          type: "radial",
+                        }
+                      }
+                      onChange={(gradient) => {
+                        // Compose CSS gradient string
+                        let background = "";
+                        if (gradient.type === "radial") {
+                          background = `radial-gradient(circle at center, ${rgbaString(
+                            gradient.color1
+                          )} 0%, ${rgbaString(gradient.color2)} 100%)`;
+                        } else {
+                          background = `linear-gradient(${
+                            gradient.angle
+                          }deg, ${rgbaString(gradient.color1)} 0%, ${rgbaString(
+                            gradient.color2
+                          )} 100%)`;
+                        }
+                        updateNestedConfig("overlays", {
+                          extraOverlay: {
+                            ...config.overlays.extraOverlay,
+                            background,
+                            gradient,
+                          },
+                        });
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white">Opacity</Label>
+                    <SliderControl
+                      label=""
+                      value={
+                        typeof config.overlays.extraOverlay?.opacity ===
+                        "number"
+                          ? config.overlays.extraOverlay.opacity
+                          : 1
+                      }
+                      onChange={(v) =>
+                        updateNestedConfig("overlays", {
+                          extraOverlay: {
+                            ...config.overlays.extraOverlay,
+                            opacity: v,
+                          },
+                        })
+                      }
+                      min={0}
+                      max={1}
+                      step={0.01}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white">Blend Mode</Label>
+                    <select
+                      className="w-full rounded border border-white/20 bg-black/30 px-2 py-1 text-white text-sm mt-1"
+                      value={config.overlays.extraOverlay?.blendMode || "color"}
+                      onChange={(e) =>
+                        updateNestedConfig("overlays", {
+                          extraOverlay: {
+                            ...config.overlays.extraOverlay,
+                            blendMode: e.target.value,
+                          },
+                        })
+                      }
+                    >
+                      <option value="color" className="bg-black/90 text-white">
+                        Color (default)
+                      </option>
+                      <option value="hue" className="bg-black/90 text-white">
+                        Hue
+                      </option>
+                      <option
+                        value="overlay"
+                        className="bg-black/90 text-white"
+                      >
+                        Overlay
+                      </option>
+                      <option value="screen" className="bg-black/90 text-white">
+                        Screen
+                      </option>
+                      <option
+                        value="multiply"
+                        className="bg-black/90 text-white"
+                      >
+                        Multiply
+                      </option>
+                      <option value="normal" className="bg-black/90 text-white">
+                        Normal
+                      </option>
+                    </select>
+                  </div>
+                </Section>
+              </>
+            )}
           </Section>
 
           <Section title="Warp Effect">
