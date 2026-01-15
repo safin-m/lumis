@@ -10,8 +10,9 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import type { DemoConfig } from "@/types/glass-config";
 import { ChevronDown, ChevronUp, Settings } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ColorPickerCustom } from "./ColorPickerCustom";
+import { debounce } from "./debounce";
 import { GradientPicker } from "./GradientPicker";
 import "./settings-panel-scrollbar.css";
 
@@ -120,6 +121,35 @@ export function SettingsPanel({
     });
   };
 
+  // Local state for elasticity and activation zone
+  const [elasticity, setElasticity] = useState(config.interactions.elasticity);
+  const [activationZone, setActivationZone] = useState(
+    config.interactions.activationZone
+  );
+
+  // Keep local state in sync with config changes from outside
+  useEffect(() => {
+    setElasticity(config.interactions.elasticity);
+  }, [config.interactions.elasticity]);
+  useEffect(() => {
+    setActivationZone(config.interactions.activationZone);
+  }, [config.interactions.activationZone]);
+
+  // Debounced config update for elasticity
+  const debouncedSetElasticity = useCallback(
+    debounce((v: number) => {
+      updateNestedConfig("interactions", { elasticity: v });
+    }, 200),
+    []
+  );
+  // Debounced config update for activation zone
+  const debouncedSetActivationZone = useCallback(
+    debounce((v: number) => {
+      updateNestedConfig("interactions", { activationZone: v });
+    }, 200),
+    []
+  );
+
   return (
     <div className="fixed top-4 right-4 w-96 bg-black/80 backdrop-blur-md border border-white/20 rounded-lg shadow-2xl z-50">
       <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -160,20 +190,22 @@ export function SettingsPanel({
               <>
                 <SliderControl
                   label="Elasticity"
-                  value={config.interactions.elasticity}
-                  onChange={(v) =>
-                    updateNestedConfig("interactions", { elasticity: v })
-                  }
+                  value={elasticity}
+                  onChange={(v) => {
+                    setElasticity(v);
+                    debouncedSetElasticity(v);
+                  }}
                   min={0}
                   max={1}
                   step={0.01}
                 />
                 <SliderControl
                   label="Activation Zone"
-                  value={config.interactions.activationZone}
-                  onChange={(v) =>
-                    updateNestedConfig("interactions", { activationZone: v })
-                  }
+                  value={activationZone}
+                  onChange={(v) => {
+                    setActivationZone(v);
+                    debouncedSetActivationZone(v);
+                  }}
                   min={0}
                   max={500}
                   step={1}
