@@ -45,6 +45,42 @@ export const baseConfig = {
    * Default: "standard" */
   mode: "standard",
 
+  // ===== Shader Mode Parameters =====
+  // Only active when mode="shader"
+
+  /** Shader edge fade start - controls where displacement begins to fade near edges
+   * Range: 0-1 (higher = more aggressive fade)
+   * Default: 0.8 */
+  shaderEdgeFadeStart: 0.8,
+
+  /** Shader edge fade offset - additional offset for edge fade calculation
+   * Range: 0-1
+   * Default: 0.15 */
+  shaderEdgeFadeOffset: 0.15,
+
+  /** Shader rounded rect corner radius - defines shape corner roundness in SDF
+   * Range: 0-1
+   * Default: 0.3 */
+  shaderCornerRadius: 0.3,
+
+  /** Shader rounded rect width factor - controls shape width in SDF
+   * Range: 0-1
+   * Default: 0.2 */
+  shaderWidthFactor: 0.2,
+
+  /** Shader rounded rect height factor - controls shape height in SDF
+   * Range: 0-1
+   * Default: 0.6 */
+  shaderHeightFactor: 0.6,
+
+  /** Shader edge distance divisor - divides edge distance for final displacement
+   * Higher = weaker edge effect
+   * Range: 1-10
+   * Default: 2 */
+  shaderEdgeDistanceDivisor: 2,
+
+  // ===== Edge Mask Settings =====
+
   /** Edge mask - applies chromatic aberration only at edges
    * Keeps center clean and sharp, useful for readable content
    * Default: false */

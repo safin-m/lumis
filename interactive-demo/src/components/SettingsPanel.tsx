@@ -279,6 +279,62 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
                 </select>
               </div>
             </div>
+
+            {config.mode === "shader" && (
+              <Section title="Shader Parameters" defaultOpen={false}>
+                <SliderControl
+                  label="Edge Fade Start"
+                  value={config.shaderEdgeFadeStart}
+                  onChange={(v) => updateConfig({ shaderEdgeFadeStart: v })}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                />
+                <SliderControl
+                  label="Edge Fade Offset"
+                  value={config.shaderEdgeFadeOffset}
+                  onChange={(v) => updateConfig({ shaderEdgeFadeOffset: v })}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                />
+                <SliderControl
+                  label="Corner Radius"
+                  value={config.shaderCornerRadius}
+                  onChange={(v) => updateConfig({ shaderCornerRadius: v })}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                />
+                <SliderControl
+                  label="Width Factor"
+                  value={config.shaderWidthFactor}
+                  onChange={(v) => updateConfig({ shaderWidthFactor: v })}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                />
+                <SliderControl
+                  label="Height Factor"
+                  value={config.shaderHeightFactor}
+                  onChange={(v) => updateConfig({ shaderHeightFactor: v })}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                />
+                <SliderControl
+                  label="Edge Distance Divisor"
+                  value={config.shaderEdgeDistanceDivisor}
+                  onChange={(v) =>
+                    updateConfig({ shaderEdgeDistanceDivisor: v })
+                  }
+                  min={1}
+                  max={10}
+                  step={0.1}
+                />
+              </Section>
+            )}
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-white">Over Light</Label>

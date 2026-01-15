@@ -138,6 +138,14 @@ export class DisplacementMapBuilder {
     const imageData = ctx.createImageData(width, height);
     const data = imageData.data;
 
+    // Extract shader parameters from config with defaults
+    const edgeFadeStart = this.config.shaderEdgeFadeStart ?? 0.8;
+    const edgeFadeOffset = this.config.shaderEdgeFadeOffset ?? 0.15;
+    const cornerRadius = this.config.shaderCornerRadius ?? 0.3;
+    const widthFactor = this.config.shaderWidthFactor ?? 0.2;
+    const heightFactor = this.config.shaderHeightFactor ?? 0.6;
+    const edgeDistanceDivisor = this.config.shaderEdgeDistanceDivisor ?? 2;
+
     // Smooth step interpolation: creates S-curve for gradual transitions
     const smoothStep = (a, b, t) => {
       t = Math.max(0, Math.min(1, (t - a) / (b - a)));
@@ -172,11 +180,21 @@ export class DisplacementMapBuilder {
         const ix = uvx - 0.5; // Centered x (-0.5 to 0.5)
         const iy = uvy - 0.5; // Centered y (-0.5 to 0.5)
 
-        // Calculate distance to rounded rect edge using SDF
-        const distanceToEdge = roundedRectSDF(ix, iy, 0.3, 0.2, 0.6);
+        // Calculate distance to rounded rect edge using SDF (using config parameters)
+        const distanceToEdge = roundedRectSDF(
+          ix,
+          iy,
+          cornerRadius,
+          widthFactor,
+          heightFactor
+        );
 
-        // Create displacement gradient: strong at edges, weak at center
-        const displacement = smoothStep(0.8, 0, distanceToEdge - 0.15);
+        // Create displacement gradient: strong at edges, weak at center (using config parameters)
+        const displacement = smoothStep(
+          edgeFadeStart,
+          0,
+          distanceToEdge - edgeFadeOffset
+        );
         const scaled = smoothStep(0, 1, displacement);
 
         // Calculate displaced position (pulls toward center)
@@ -206,8 +224,8 @@ export class DisplacementMapBuilder {
 
         // Calculate distance to nearest edge
         const edgeDistance = Math.min(x, y, width - x - 1, height - y - 1);
-        // Fade displacement near edges to prevent harsh boundaries
-        const edgeFactor = Math.min(1, edgeDistance / 2);
+        // Fade displacement near edges to prevent harsh boundaries (using config parameter)
+        const edgeFactor = Math.min(1, edgeDistance / edgeDistanceDivisor);
 
         // Normalize to 0-1 range (0.5 = no displacement)
         const r = (dx * edgeFactor) / maxScale + 0.5;

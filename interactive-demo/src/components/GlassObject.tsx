@@ -106,10 +106,18 @@ export function GlassObject({
   useEffect(() => {
     if (glassEffectRef.current) {
       const configWithCssColors = withCssColors(config);
-      // Deep merge config to preserve nested object changes
+      // Deep merge config to preserve nested object changes (including shader params)
       glassEffectRef.current.config = {
         ...glassEffectRef.current.config,
         ...configWithCssColors,
+        // Ensure shader parameters are included
+        shaderEdgeFadeStart: configWithCssColors.shaderEdgeFadeStart,
+        shaderEdgeFadeOffset: configWithCssColors.shaderEdgeFadeOffset,
+        shaderCornerRadius: configWithCssColors.shaderCornerRadius,
+        shaderWidthFactor: configWithCssColors.shaderWidthFactor,
+        shaderHeightFactor: configWithCssColors.shaderHeightFactor,
+        shaderEdgeDistanceDivisor:
+          configWithCssColors.shaderEdgeDistanceDivisor,
         warp: {
           ...glassEffectRef.current.config.warp,
           ...configWithCssColors.warp,

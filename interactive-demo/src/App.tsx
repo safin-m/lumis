@@ -11,6 +11,15 @@ const initialConfig: DemoConfig = {
   backdropBlur: 1,
   overLight: false,
   mode: "standard",
+
+  // Shader mode parameters
+  shaderEdgeFadeStart: 0.8,
+  shaderEdgeFadeOffset: 0.15,
+  shaderCornerRadius: 0.3,
+  shaderWidthFactor: 0.2,
+  shaderHeightFactor: 0.6,
+  shaderEdgeDistanceDivisor: 2,
+
   edgeMask: true,
   edgeMaskPreserveDistortion: true,
   edgeMaskArithmeticBlend: false,

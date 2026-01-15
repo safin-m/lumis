@@ -332,6 +332,12 @@ export class GlassEffect {
       edgeMaskPreserveDistortion,
       edgeMaskArithmeticBlend,
       mode,
+      shaderEdgeFadeStart,
+      shaderEdgeFadeOffset,
+      shaderCornerRadius,
+      shaderWidthFactor,
+      shaderHeightFactor,
+      shaderEdgeDistanceDivisor,
     } = this.config;
 
     // Cache key includes all parameters that affect the displacement map appearance
@@ -353,6 +359,12 @@ export class GlassEffect {
       edgeMaskPreserveDistortion,
       edgeMaskArithmeticBlend,
       mode,
+      shaderEdgeFadeStart,
+      shaderEdgeFadeOffset,
+      shaderCornerRadius,
+      shaderWidthFactor,
+      shaderHeightFactor,
+      shaderEdgeDistanceDivisor,
     });
 
     // Return cached map if config hash hasn't changed

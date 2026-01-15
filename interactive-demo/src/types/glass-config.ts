@@ -6,6 +6,15 @@ export interface GlassConfig {
   backdropBlur: number;
   overLight: boolean;
   mode: "standard" | "shader";
+
+  // Shader mode parameters
+  shaderEdgeFadeStart: number;
+  shaderEdgeFadeOffset: number;
+  shaderCornerRadius: number;
+  shaderWidthFactor: number;
+  shaderHeightFactor: number;
+  shaderEdgeDistanceDivisor: number;
+
   edgeMask: boolean;
   edgeMaskPreserveDistortion: boolean;
   edgeMaskArithmeticBlend: boolean;
