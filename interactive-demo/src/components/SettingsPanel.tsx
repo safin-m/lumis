@@ -452,6 +452,137 @@ export function SettingsPanel({
                 </div>
               </>
             )}
+
+            {/* Displacement Map Controls */}
+            <SliderControl
+              label="Border Fade"
+              value={config.border}
+              onChange={(v) => updateConfig({ border: v })}
+              min={0}
+              max={1}
+              step={0.01}
+            />
+            <SliderControl
+              label="Lightness"
+              value={config.lightness}
+              onChange={(v) => updateConfig({ lightness: v })}
+              min={0}
+              max={100}
+              step={1}
+            />
+            <SliderControl
+              label="Alpha"
+              value={config.alpha}
+              onChange={(v) => updateConfig({ alpha: v })}
+              min={0}
+              max={1}
+              step={0.01}
+            />
+            <SliderControl
+              label="Center Blur"
+              value={config.blur}
+              onChange={(v) => updateConfig({ blur: v })}
+              min={0}
+              max={50}
+              step={1}
+            />
+            <SliderControl
+              label="Output Blur (Displace)"
+              value={config.displace}
+              onChange={(v) => updateConfig({ displace: v })}
+              min={0}
+              max={10}
+              step={0.1}
+            />
+            <div className="space-y-2">
+              <Label className="text-white">Blend Mode</Label>
+              <select
+                className="w-full rounded border border-white/20 bg-black/30 px-2 py-1 text-white text-sm mt-1"
+                value={config.blend}
+                onChange={(e) => updateConfig({ blend: e.target.value })}
+              >
+                <option value="difference" className="bg-black/90 text-white">
+                  Difference
+                </option>
+                <option value="normal" className="bg-black/90 text-white">
+                  Normal
+                </option>
+                <option value="multiply" className="bg-black/90 text-white">
+                  Multiply
+                </option>
+                <option value="screen" className="bg-black/90 text-white">
+                  Screen
+                </option>
+                <option value="color" className="bg-black/90 text-white">
+                  Color
+                </option>
+                <option value="color-dodge" className="bg-black/90 text-white">
+                  Color Dodge
+                </option>
+                <option value="color-burn" className="bg-black/90 text-white">
+                  Color Burn
+                </option>
+                <option value="darken" className="bg-black/90 text-white">
+                  Darken
+                </option>
+                <option value="lighten" className="bg-black/90 text-white">
+                  Lighten
+                </option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">X Channel</Label>
+              <select
+                className="w-full rounded border border-white/20 bg-black/30 px-2 py-1 text-white text-sm mt-1"
+                value={config.x}
+                onChange={(e) =>
+                  updateConfig({ x: e.target.value as "R" | "G" | "B" })
+                }
+              >
+                <option value="R">R</option>
+                <option value="G">G</option>
+                <option value="B">B</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Y Channel</Label>
+              <select
+                className="w-full rounded border border-white/20 bg-black/30 px-2 py-1 text-white text-sm mt-1"
+                value={config.y}
+                onChange={(e) =>
+                  updateConfig({ y: e.target.value as "R" | "G" | "B" })
+                }
+              >
+                <option value="R">R</option>
+                <option value="G">G</option>
+                <option value="B">B</option>
+              </select>
+            </div>
+            <SliderControl
+              label="Red Channel Offset"
+              value={config.r}
+              onChange={(v) => updateConfig({ r: v })}
+              min={-50}
+              max={50}
+              step={1}
+            />
+            <SliderControl
+              label="Green Channel Offset"
+              value={config.g}
+              onChange={(v) => updateConfig({ g: v })}
+              min={-50}
+              max={50}
+              step={1}
+            />
+            <SliderControl
+              label="Blue Channel Offset"
+              value={config.b}
+              onChange={(v) => updateConfig({ b: v })}
+              min={-50}
+              max={50}
+              step={1}
+            />
+
             <SliderControl
               label="Radius"
               value={config.radius}

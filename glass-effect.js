@@ -363,9 +363,11 @@ export class GlassEffect {
       shaderWidthFactor,
       shaderHeightFactor,
       shaderEdgeDistanceDivisor,
+      x,
+      y,
     } = this.config;
 
-    // Cache key includes all parameters that affect the displacement map appearance
+    // Cache key includes all parameters that affect the displacement map appearance, including x/y channel selectors
     const cacheKey = JSON.stringify({
       width,
       height,
@@ -390,6 +392,8 @@ export class GlassEffect {
       shaderWidthFactor,
       shaderHeightFactor,
       shaderEdgeDistanceDivisor,
+      x,
+      y,
     });
 
     // Return cached map if config hash hasn't changed
