@@ -81,8 +81,81 @@ export class GlassEffect {
     this.cacheFilterElements();
     this.createShineOverlay();
     this.setupHoverEffects();
+    this.updateStackedDistortionClone();
     this.init();
     this.setupResizeObserver();
+  }
+
+  /**
+   * Checks config and manages the stacked distortion clone.
+   * Should be called after config changes or on init.
+   */
+  updateStackedDistortionClone() {
+    const { edgeMask, edgeMaskPreserveDistortion } = this.config;
+    if (edgeMask && edgeMaskPreserveDistortion) {
+      this.createStackedDistortionClone();
+    } else if (this.stackedDistortionClone) {
+      this.stackedDistortionClone.remove();
+      this.stackedDistortionClone = null;
+      if (this.stackedDistortionSVG) {
+        this.stackedDistortionSVG.remove();
+        this.stackedDistortionSVG = null;
+      }
+    }
+  }
+
+  /**
+   * Creates a stacked distortion effect by cloning the glass element,
+   * generating a new SVG filter, and positioning the clone on top.
+   */
+  createStackedDistortionClone() {
+    // Remove previous clone if it exists
+    if (this.stackedDistortionClone) {
+      this.stackedDistortionClone.remove();
+      this.stackedDistortionClone = null;
+    }
+    if (this.stackedDistortionSVG) {
+      this.stackedDistortionSVG.remove();
+      this.stackedDistortionSVG = null;
+    }
+
+    // Deep clone the glass element (without event listeners)
+    const clone = this.element.cloneNode(true);
+    clone.removeAttribute("id");
+    // Generate a new unique filter ID
+    const stackedFilterId = generateUniqueId();
+
+    // Create a new SVG filter for the clone
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    Object.assign(svg.style, {
+      position: "absolute",
+      width: "0",
+      height: "0",
+      pointerEvents: "none",
+    });
+    // Use the same config as the main filter, but with the new ID
+    const filterBuilder = new SVGFilterBuilder(stackedFilterId, this.config);
+    svg.innerHTML = filterBuilder.build();
+    document.body.appendChild(svg);
+    this.stackedDistortionSVG = svg;
+
+    // Apply the new filter to the clone
+
+    clone.style.position = "absolute";
+    clone.style.top = `${this.element.offsetTop}px`;
+    clone.style.left = `${this.element.offsetLeft}px`;
+    clone.style.width = `${this.element.offsetWidth}px`;
+    clone.style.height = `${this.element.offsetHeight}px`;
+    clone.style.zIndex = 99999;
+    clone.style.pointerEvents = "none";
+
+    // Insert the clone as a sibling after the original
+    this.element.parentNode.insertBefore(clone, this.element.nextSibling);
+    //set backdropfilter blur to 0
+    // clone.style.backdropFilter = `url(#${stackedFilterId}) blur(0px)`;
+    this.stackedDistortionClone = clone;
+    // Debug: log to console
+    // console.log('[GlassEffect] Stacked distortion clone created', clone, svg);
   }
 
   /**
@@ -470,6 +543,8 @@ export class GlassEffect {
     this.createBorderLayers(overlays);
     this.createExtraOverlay(overlays);
     this.createHoverOverlays(overlays);
+    // Manage stacked distortion clone if needed
+    this.updateStackedDistortionClone();
   }
 
   /**

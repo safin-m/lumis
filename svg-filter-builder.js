@@ -31,7 +31,6 @@ export class SVGFilterBuilder {
    * @param {number} config.b - Blue channel offset
    * @param {number} config.displace - Output blur amount
    * @param {boolean} config.edgeMask - Enable edge-only aberration
-   * @param {boolean} config.edgeMaskPreserveDistortion - Keep center distortion with edge mask
    * @param {string} config.mode - "standard" or "shader"
    */
   constructor(filterId, config) {
@@ -103,6 +102,8 @@ export class SVGFilterBuilder {
     const greenScale = scaleDir * (scale + g);
     const blueScale = scaleDir * (scale + b);
 
+    const width = this.config.width || 400;
+    const height = this.config.height || 400;
     return `
       <defs>
         <filter id="${this.filterId}" color-interpolation-filters="sRGB">
@@ -110,8 +111,8 @@ export class SVGFilterBuilder {
           <feImage 
             x="0" 
             y="0" 
-            width="100%" 
-            height="100%" 
+            width="${width}" 
+            height="${height}" 
             preserveAspectRatio="none"
             result="map" 
             class="${feImageClass}">
@@ -191,17 +192,18 @@ export class SVGFilterBuilder {
             <feFuncA type="table" tableValues="1 0"/>
           </feComponentTransfer>
           
-          <!-- Create center: use distorted rgb if preserving, else undistorted source -->
+          <!-- Create center: use distorted rgb if preserving, else re-distort blurred/edge-masked result for center -->
           ${
             this.config.edgeMaskPreserveDistortion
               ? `<!-- Use distorted result for center -->`
-              : `<!-- Use undistorted source for center -->
-          <feDisplacementMap in="SourceGraphic" in2="map" scale="0" xChannelSelector="${this.config.x}" yChannelSelector="${this.config.y}" result="centerUndistorted"/>`
+              : `<!-- Re-distort blurred/edge-masked result for center -->
+          <feDisplacementMap in="SourceGraphic" in2="map" scale="0" xChannelSelector="${this.config.x}" yChannelSelector="${this.config.y}" result="centerUndistorted"/>
+          <feDisplacementMap in="centerUndistorted" in2="map" scale="${this.config.scale}" xChannelSelector="${this.config.x}" yChannelSelector="${this.config.y}" result="centerRedistorted"/>`
           }
           
           <!-- Apply inverted mask to center -->
           <feComposite in="${
-            this.config.edgeMaskPreserveDistortion ? "rgb" : "centerUndistorted"
+            this.config.edgeMaskPreserveDistortion ? "rgb" : "centerRedistorted"
           }" in2="invertedMask" operator="${
                   this.config.edgeMaskArithmeticBlend
                     ? 'arithmetic" k1="0" k2="1" k3="0" k4="0'
