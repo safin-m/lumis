@@ -157,7 +157,7 @@ export class GlassEffect {
     clone.style.left = `${this.element.offsetLeft}px`;
     clone.style.width = `${this.element.offsetWidth}px`;
     clone.style.height = `${this.element.offsetHeight}px`;
-    clone.style.zIndex = 1;
+    clone.style.zIndex = `${(this.element.style.zIndex || 1) - 1}`;
     clone.style.pointerEvents = "none";
     clone.style.backdropFilter = `url(#${stackedFilterId})`;
 
