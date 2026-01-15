@@ -8,11 +8,11 @@ const initialConfig: DemoConfig = {
   radius: 16,
   frost: 0,
   saturation: 1,
-  backdropBlur: 0,
+  backdropBlur: 1,
   overLight: false,
   mode: "standard",
-  edgeMask: false,
-  edgeMaskPreserveDistortion: false,
+  edgeMask: true,
+  edgeMaskPreserveDistortion: true,
   edgeMaskArithmeticBlend: false,
 
   interactions: {

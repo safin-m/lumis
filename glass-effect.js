@@ -132,9 +132,10 @@ export class GlassEffect {
       this.stackedDistortionObserver = null;
     }
 
-    // Deep clone the glass element (without event listeners)
-    const clone = this.element.cloneNode(true);
-    clone.removeAttribute("id");
+    // Create a lightweight clone (empty div with same dimensions)
+    const clone = document.createElement("div");
+    clone.className = this.element.className;
+
     // Generate a new unique filter ID
     const stackedFilterId = generateUniqueId();
 
@@ -173,32 +174,46 @@ export class GlassEffect {
     clone.style.zIndex = `${(this.element.style.zIndex || 1) - 1}`;
     clone.style.pointerEvents = "none";
     clone.style.backdropFilter = `url(#${stackedFilterId})`;
+    clone.style.borderRadius = window.getComputedStyle(
+      this.element
+    ).borderRadius;
 
     // Insert the clone as a sibling after the original
     this.element.parentNode.insertBefore(clone, this.element.nextSibling);
     this.stackedDistortionClone = clone;
 
-    // Set up MutationObserver to sync clone with original element
+    // Throttle sync with requestAnimationFrame to batch updates
+    let syncScheduled = false;
     const syncClone = () => {
-      // If element has explicit style position, use it (React case)
-      // Otherwise, use offsetTop/offsetLeft (index.html case)
-      if (this.element.style.top) {
-        clone.style.top = this.element.style.top;
-      } else {
-        clone.style.top = `${this.element.offsetTop}px`;
-      }
+      if (syncScheduled) return;
+      syncScheduled = true;
 
-      if (this.element.style.left) {
-        clone.style.left = this.element.style.left;
-      } else {
-        clone.style.left = `${this.element.offsetLeft}px`;
-      }
+      requestAnimationFrame(() => {
+        // If element has explicit style position, use it (React case)
+        // Otherwise, use offsetTop/offsetLeft (index.html case)
+        if (this.element.style.top) {
+          clone.style.top = this.element.style.top;
+        } else {
+          clone.style.top = `${this.element.offsetTop}px`;
+        }
 
-      clone.style.width =
-        this.element.style.width || `${this.element.offsetWidth}px`;
-      clone.style.height =
-        this.element.style.height || `${this.element.offsetHeight}px`;
-      clone.style.transform = this.element.style.transform;
+        if (this.element.style.left) {
+          clone.style.left = this.element.style.left;
+        } else {
+          clone.style.left = `${this.element.offsetLeft}px`;
+        }
+
+        clone.style.width =
+          this.element.style.width || `${this.element.offsetWidth}px`;
+        clone.style.height =
+          this.element.style.height || `${this.element.offsetHeight}px`;
+        clone.style.transform = this.element.style.transform;
+        clone.style.borderRadius = window.getComputedStyle(
+          this.element
+        ).borderRadius;
+
+        syncScheduled = false;
+      });
     };
 
     // Initial sync
