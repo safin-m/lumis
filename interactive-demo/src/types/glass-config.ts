@@ -37,6 +37,12 @@ export interface GlassConfig {
       background: string;
       opacity: number;
       blendMode: string;
+      gradient?: {
+        color1: string;
+        color2: string;
+        angle: number;
+        type: "radial" | "linear";
+      };
     };
   };
 

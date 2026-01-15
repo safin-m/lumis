@@ -12,6 +12,16 @@ import type { DemoConfig } from "@/types/glass-config";
 import { ChevronDown, ChevronUp, Settings } from "lucide-react";
 import { useState } from "react";
 import { ColorPickerCustom } from "./ColorPickerCustom";
+import { GradientPicker } from "./GradientPicker";
+// Helper for rgba string
+function rgbaString(color: string) {
+  const match = color.match(/^(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?$/);
+  if (match) {
+    const [r, g, b, a] = [match[1], match[2], match[3], match[4] ?? "1"];
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+  }
+  return color;
+}
 
 interface SettingsPanelProps {
   config: DemoConfig;
@@ -420,6 +430,7 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
                 </option>
               </select>
             </div>
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-white">Enabled</Label>
@@ -686,6 +697,117 @@ export function SettingsPanel({ config, onConfigChange }: SettingsPanelProps) {
                 />
               </Section>
             )}
+
+            <Section title="Additive Overlay" defaultOpen={false}>
+              <Label className="text-white font-semibold">Extra Overlay</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-white">Enabled</Label>
+                <Switch
+                  checked={config.overlays.extraOverlay?.enabled || false}
+                  onChange={(e) =>
+                    updateNestedConfig("overlays", {
+                      extraOverlay: {
+                        ...config.overlays.extraOverlay,
+                        enabled: e.target.checked,
+                      },
+                    })
+                  }
+                  className="h-6 w-11"
+                />
+              </div>
+              <div>
+                <Label className="text-white">Background Gradient</Label>
+                <GradientPicker
+                  label=""
+                  value={
+                    config.overlays.extraOverlay?.gradient || {
+                      color1: "186, 85, 211, 0.4",
+                      color2: "255, 0, 255, 0.3",
+                      angle: 135,
+                      type: "radial",
+                    }
+                  }
+                  onChange={(gradient) => {
+                    // Compose CSS gradient string
+                    let background = "";
+                    if (gradient.type === "radial") {
+                      background = `radial-gradient(circle at center, ${rgbaString(
+                        gradient.color1
+                      )} 0%, ${rgbaString(gradient.color2)} 100%)`;
+                    } else {
+                      background = `linear-gradient(${
+                        gradient.angle
+                      }deg, ${rgbaString(gradient.color1)} 0%, ${rgbaString(
+                        gradient.color2
+                      )} 100%)`;
+                    }
+                    updateNestedConfig("overlays", {
+                      extraOverlay: {
+                        ...config.overlays.extraOverlay,
+                        background,
+                        gradient,
+                      },
+                    });
+                  }}
+                />
+              </div>
+              <div>
+                <Label className="text-white">Opacity</Label>
+                <SliderControl
+                  label=""
+                  value={
+                    typeof config.overlays.extraOverlay?.opacity === "number"
+                      ? config.overlays.extraOverlay.opacity
+                      : 1
+                  }
+                  onChange={(v) =>
+                    updateNestedConfig("overlays", {
+                      extraOverlay: {
+                        ...config.overlays.extraOverlay,
+                        opacity: v,
+                      },
+                    })
+                  }
+                  min={0}
+                  max={1}
+                  step={0.01}
+                />
+              </div>
+              <div>
+                <Label className="text-white">Blend Mode</Label>
+                <select
+                  className="w-full rounded border border-white/20 bg-black/30 px-2 py-1 text-white text-sm mt-1"
+                  value={config.overlays.extraOverlay?.blendMode || "color"}
+                  onChange={(e) =>
+                    updateNestedConfig("overlays", {
+                      extraOverlay: {
+                        ...config.overlays.extraOverlay,
+                        blendMode: e.target.value,
+                      },
+                    })
+                  }
+                >
+                  <option value="color" className="bg-black/90 text-white">
+                    Color (default)
+                  </option>
+                  <option value="hue" className="bg-black/90 text-white">
+                    Hue
+                  </option>
+                  <option value="overlay" className="bg-black/90 text-white">
+                    Overlay
+                  </option>
+                  <option value="screen" className="bg-black/90 text-white">
+                    Screen
+                  </option>
+                  <option value="multiply" className="bg-black/90 text-white">
+                    Multiply
+                  </option>
+                  <option value="normal" className="bg-black/90 text-white">
+                    Normal
+                  </option>
+                </select>
+              </div>
+            </Section>
           </Section>
 
           <Section title="Warp Effect">
