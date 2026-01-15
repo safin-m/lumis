@@ -298,14 +298,6 @@ export function SettingsPanel({
           </Section>
 
           <Section title="Core Effects">
-            <SliderControl
-              label="Scale"
-              value={config.scale}
-              onChange={(v) => updateConfig({ scale: v })}
-              min={-200}
-              max={200}
-              step={1}
-            />
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-white">Mode</Label>
@@ -453,7 +445,14 @@ export function SettingsPanel({
               </>
             )}
 
-            {/* Displacement Map Controls */}
+            <SliderControl
+              label="Scale"
+              value={config.scale}
+              onChange={(v) => updateConfig({ scale: v })}
+              min={-200}
+              max={200}
+              step={1}
+            />
             <SliderControl
               label="Border Fade"
               value={config.border}
@@ -461,6 +460,35 @@ export function SettingsPanel({
               min={0}
               max={1}
               step={0.01}
+            />
+            <SliderControl
+              label="Radius"
+              value={config.radius}
+              onChange={(v) => updateConfig({ radius: v })}
+              min={0}
+              max={100}
+              step={1}
+            />
+            <SliderControl
+              label="Frost"
+              value={config.frost}
+              onChange={(v) => updateConfig({ frost: v })}
+              min={0}
+              max={1}
+            />
+            <SliderControl
+              label="Saturation"
+              value={config.saturation}
+              onChange={(v) => updateConfig({ saturation: v })}
+              min={0}
+              max={2}
+            />
+            <SliderControl
+              label="Backdrop Blur"
+              value={config.backdropBlur}
+              onChange={(v) => updateConfig({ backdropBlur: v })}
+              min={0}
+              max={1}
             />
             <SliderControl
               label="Lightness"
@@ -539,9 +567,15 @@ export function SettingsPanel({
                   updateConfig({ x: e.target.value as "R" | "G" | "B" })
                 }
               >
-                <option value="R">R</option>
-                <option value="G">G</option>
-                <option value="B">B</option>
+                <option value="R" className="bg-black/90 text-white">
+                  R
+                </option>
+                <option value="G" className="bg-black/90 text-white">
+                  G
+                </option>
+                <option value="B" className="bg-black/90 text-white">
+                  B
+                </option>
               </select>
             </div>
             <div className="space-y-2">
@@ -553,65 +587,17 @@ export function SettingsPanel({
                   updateConfig({ y: e.target.value as "R" | "G" | "B" })
                 }
               >
-                <option value="R">R</option>
-                <option value="G">G</option>
-                <option value="B">B</option>
+                <option value="R" className="bg-black/90 text-white">
+                  R
+                </option>
+                <option value="G" className="bg-black/90 text-white">
+                  G
+                </option>
+                <option value="B" className="bg-black/90 text-white">
+                  B
+                </option>
               </select>
             </div>
-            <SliderControl
-              label="Red Channel Offset"
-              value={config.r}
-              onChange={(v) => updateConfig({ r: v })}
-              min={-50}
-              max={50}
-              step={1}
-            />
-            <SliderControl
-              label="Green Channel Offset"
-              value={config.g}
-              onChange={(v) => updateConfig({ g: v })}
-              min={-50}
-              max={50}
-              step={1}
-            />
-            <SliderControl
-              label="Blue Channel Offset"
-              value={config.b}
-              onChange={(v) => updateConfig({ b: v })}
-              min={-50}
-              max={50}
-              step={1}
-            />
-
-            <SliderControl
-              label="Radius"
-              value={config.radius}
-              onChange={(v) => updateConfig({ radius: v })}
-              min={0}
-              max={100}
-              step={1}
-            />
-            <SliderControl
-              label="Frost"
-              value={config.frost}
-              onChange={(v) => updateConfig({ frost: v })}
-              min={0}
-              max={1}
-            />
-            <SliderControl
-              label="Saturation"
-              value={config.saturation}
-              onChange={(v) => updateConfig({ saturation: v })}
-              min={0}
-              max={2}
-            />
-            <SliderControl
-              label="Backdrop Blur"
-              value={config.backdropBlur}
-              onChange={(v) => updateConfig({ backdropBlur: v })}
-              min={0}
-              max={1}
-            />
           </Section>
 
           <Section title="Overlays">
