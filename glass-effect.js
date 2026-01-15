@@ -101,14 +101,26 @@ export class GlassEffect {
    */
   updateStackedDistortionClone() {
     const { edgeMask, edgeMaskPreserveDistortion } = this.config;
-    if (edgeMask && edgeMaskPreserveDistortion) {
-      this.createStackedDistortionClone();
-    } else if (this.stackedDistortionClone) {
-      this.stackedDistortionClone.remove();
-      this.stackedDistortionClone = null;
+    // Only create or remove clone if the state actually changes
+    const shouldHaveClone = edgeMask && edgeMaskPreserveDistortion;
+    if (shouldHaveClone) {
+      // Only create if not already present
+      if (!this.stackedDistortionClone) {
+        this.createStackedDistortionClone();
+      }
+    } else {
+      // Remove any existing clone and SVG
+      if (this.stackedDistortionClone) {
+        this.stackedDistortionClone.remove();
+        this.stackedDistortionClone = null;
+      }
       if (this.stackedDistortionSVG) {
         this.stackedDistortionSVG.remove();
         this.stackedDistortionSVG = null;
+      }
+      if (this.stackedDistortionObserver) {
+        this.stackedDistortionObserver.disconnect();
+        this.stackedDistortionObserver = null;
       }
     }
   }
