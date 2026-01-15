@@ -47,6 +47,15 @@ export class GlassEffect {
   constructor(element, config = {}) {
     this.element = element;
 
+    // Ensure element has a z-index of at least 1
+    const currentZIndex = window.getComputedStyle(element).zIndex;
+    if (
+      !element.style.zIndex &&
+      (currentZIndex === "auto" || currentZIndex === "0")
+    ) {
+      element.style.zIndex = "1";
+    }
+
     // Deep merge config with defaults to handle nested objects properly
     this.config = {
       ...baseConfig,
