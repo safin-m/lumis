@@ -6,6 +6,7 @@
  * the glass object, settings panel, and background content.
  */
 
+import type { GlassEffect } from "@/assets/js/glass-effect.esm.js";
 import { useRef, useState } from "react";
 import { BackgroundContent } from "./components/BackgroundContent";
 import { GlassObject } from "./components/GlassObject";
@@ -31,7 +32,7 @@ function App() {
   const [position, setPosition] = useState(DEFAULT_POSITION);
 
   // Reference to the glass effect instance for direct API access
-  const glassEffectRef = useRef<any>(null);
+  const glassEffectRef = useRef<GlassEffect | null>(null);
 
   return (
     <div className="dark min-h-screen bg-background text-foreground overflow-hidden">

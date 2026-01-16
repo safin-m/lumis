@@ -6,6 +6,7 @@
  * and code generation for developers.
  */
 
+import "@/assets/styles/scrollbar.css";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -21,14 +22,15 @@ import {
   generateDataAttributes,
   generateSVGCode,
 } from "@/helpers/codeGenerators";
+import { useDebounce } from "@/hooks";
 import type { DemoConfig } from "@/types/glass-config";
+
+import type { GlassEffect } from "@/assets/js/glass-effect.esm.js";
 import { rgbaString } from "@/utils/colorUtils";
 import { ChevronDown, ChevronUp, Settings } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ColorPickerCustom } from "./ColorPickerCustom";
-import { debounce } from "./debounce";
 import { GradientPicker } from "./GradientPicker";
-import "./settings-panel-scrollbar.css";
 
 interface SettingsPanelProps {
   /** The current glass effect configuration */
@@ -36,7 +38,7 @@ interface SettingsPanelProps {
   /** Callback fired when configuration changes */
   onConfigChange: (config: DemoConfig) => void;
   /** Reference to the glass effect instance */
-  glassEffectRef: React.MutableRefObject<any>;
+  glassEffectRef: React.MutableRefObject<GlassEffect | null>;
 }
 
 /**
@@ -159,20 +161,14 @@ export function SettingsPanel({
     setActivationZone(config.interactions.activationZone);
   }, [config.interactions.activationZone]);
 
-  // Debounced config updates for performance
-  const debouncedSetElasticity = useCallback(
-    debounce((v: number) => {
-      updateNestedConfig("interactions", { elasticity: v });
-    }, 200),
-    [config]
-  );
+  // Debounced config updates for performance using custom hook
+  const debouncedSetElasticity = useDebounce((v: number) => {
+    updateNestedConfig("interactions", { elasticity: v });
+  }, 200);
 
-  const debouncedSetActivationZone = useCallback(
-    debounce((v: number) => {
-      updateNestedConfig("interactions", { activationZone: v });
-    }, 200),
-    [config]
-  );
+  const debouncedSetActivationZone = useDebounce((v: number) => {
+    updateNestedConfig("interactions", { activationZone: v });
+  }, 200);
 
   return (
     <div className="fixed top-4 right-4 w-96 bg-black/80 backdrop-blur-md border border-white/20 rounded-lg shadow-2xl z-50">

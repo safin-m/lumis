@@ -10,6 +10,11 @@ import type { DemoConfig } from "@/types/glass-config";
 import { toCssColor } from "@/utils/colorUtils";
 import { useEffect, useRef } from "react";
 
+// Type alias for GlassEffect from ambient module declaration
+// This must match the ambient module declaration path in glass-effect-module.d.ts
+// and be relative to the importing file (src/)
+import type { GlassEffect } from "@/assets/js/glass-effect.esm.js";
+
 interface GlassObjectProps {
   /** The glass effect configuration */
   config: DemoConfig;
@@ -18,7 +23,7 @@ interface GlassObjectProps {
   /** Callback fired when the position changes */
   onPositionChange: (position: { x: number; y: number }) => void;
   /** Reference to the glass effect instance */
-  glassEffectRef: React.MutableRefObject<any>;
+  glassEffectRef: React.MutableRefObject<GlassEffect | null>;
 }
 
 /**
@@ -84,19 +89,22 @@ export function GlassObject({
     let destroyed = false;
 
     // Dynamically import and initialize the glass effect
-    // @ts-expect-error - glass-effect is a plain JS module
-    import("../../../dist/glass-effect.esm.js").then((module: any) => {
-      if (destroyed) return;
-      const GlassEffect = module.GlassEffect;
+    import("../assets/js/glass-effect.esm.js").then(
+      (module: {
+        GlassEffect: new (element: HTMLElement, config: any) => GlassEffect;
+      }) => {
+        if (destroyed) return;
+        const { GlassEffect } = module;
 
-      // Clean up previous instance if it exists
-      if (glassEffectRef.current?.destroy) {
-        glassEffectRef.current.destroy();
+        // Clean up previous instance if it exists
+        if (glassEffectRef.current?.destroy) {
+          glassEffectRef.current.destroy();
+        }
+
+        // Create new glass effect instance
+        glassEffectRef.current = new GlassEffect(element, configWithCssColors);
       }
-
-      // Create new glass effect instance
-      glassEffectRef.current = new GlassEffect(element, configWithCssColors);
-    });
+    );
 
     return () => {
       destroyed = true;
