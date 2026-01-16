@@ -147,7 +147,7 @@ export function SettingsPanel({
     debounce((v: number) => {
       updateNestedConfig("interactions", { activationZone: v });
     }, 200),
-    []
+    [config]
   );
 
   return (
