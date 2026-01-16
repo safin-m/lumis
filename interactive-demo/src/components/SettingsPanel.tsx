@@ -1,3 +1,11 @@
+/**
+ * SettingsPanel Component
+ *
+ * A comprehensive settings panel for configuring all aspects of the glass effect.
+ * Provides real-time controls for visual parameters, interactions, overlays,
+ * and code generation for developers.
+ */
+
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -8,7 +16,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import {
+  generateConfigCode,
+  generateDataAttributes,
+  generateSVGCode,
+} from "@/helpers/codeGenerators";
 import type { DemoConfig } from "@/types/glass-config";
+import { rgbaString } from "@/utils/colorUtils";
 import { ChevronDown, ChevronUp, Settings } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { ColorPickerCustom } from "./ColorPickerCustom";
@@ -16,22 +30,18 @@ import { debounce } from "./debounce";
 import { GradientPicker } from "./GradientPicker";
 import "./settings-panel-scrollbar.css";
 
-// Helper for rgba string
-function rgbaString(color: string) {
-  const match = color.match(/^(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?$/);
-  if (match) {
-    const [r, g, b, a] = [match[1], match[2], match[3], match[4] ?? "1"];
-    return `rgba(${r}, ${g}, ${b}, ${a})`;
-  }
-  return color;
-}
-
 interface SettingsPanelProps {
+  /** The current glass effect configuration */
   config: DemoConfig;
+  /** Callback fired when configuration changes */
   onConfigChange: (config: DemoConfig) => void;
+  /** Reference to the glass effect instance */
   glassEffectRef: React.MutableRefObject<any>;
 }
 
+/**
+ * SliderControl - A reusable slider component with label and value display
+ */
 function SliderControl({
   label,
   value,
@@ -65,6 +75,9 @@ function SliderControl({
   );
 }
 
+/**
+ * Section - A collapsible section component for organizing settings
+ */
 function Section({
   title,
   header,
@@ -100,6 +113,10 @@ function Section({
   );
 }
 
+/**
+ * SettingsPanel - Main settings panel component
+ * Provides a comprehensive UI for adjusting all glass effect parameters
+ */
 export function SettingsPanel({
   config,
   onConfigChange,
@@ -107,10 +124,16 @@ export function SettingsPanel({
 }: SettingsPanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  /**
+   * Updates top-level configuration properties
+   */
   const updateConfig = (updates: Partial<DemoConfig>) => {
     onConfigChange({ ...config, ...updates });
   };
 
+  /**
+   * Updates nested configuration properties (like interactions, overlays)
+   */
   const updateNestedConfig = <K extends keyof DemoConfig>(
     key: K,
     updates: Partial<DemoConfig[K]>
@@ -121,28 +144,29 @@ export function SettingsPanel({
     });
   };
 
-  // Local state for elasticity and activation zone
+  // Local state for debounced inputs
   const [elasticity, setElasticity] = useState(config.interactions.elasticity);
   const [activationZone, setActivationZone] = useState(
     config.interactions.activationZone
   );
 
-  // Keep local state in sync with config changes from outside
+  // Keep local state in sync with external config changes
   useEffect(() => {
     setElasticity(config.interactions.elasticity);
   }, [config.interactions.elasticity]);
+
   useEffect(() => {
     setActivationZone(config.interactions.activationZone);
   }, [config.interactions.activationZone]);
 
-  // Debounced config update for elasticity
+  // Debounced config updates for performance
   const debouncedSetElasticity = useCallback(
     debounce((v: number) => {
       updateNestedConfig("interactions", { elasticity: v });
     }, 200),
     [config]
   );
-  // Debounced config update for activation zone
+
   const debouncedSetActivationZone = useCallback(
     debounce((v: number) => {
       updateNestedConfig("interactions", { activationZone: v });
@@ -1339,136 +1363,4 @@ export function SettingsPanel({
       )}
     </div>
   );
-}
-
-// Helper functions for code generation
-function generateConfigCode(config: DemoConfig): string {
-  const cleanConfig = {
-    scale: config.scale,
-    radius: config.radius,
-    frost: config.frost,
-    saturation: config.saturation,
-    backdropBlur: config.backdropBlur,
-    overLight: config.overLight,
-    mode: config.mode,
-    ...(config.mode === "shader" && {
-      shaderEdgeFadeStart: config.shaderEdgeFadeStart,
-      shaderEdgeFadeOffset: config.shaderEdgeFadeOffset,
-      shaderCornerRadius: config.shaderCornerRadius,
-      shaderWidthFactor: config.shaderWidthFactor,
-      shaderHeightFactor: config.shaderHeightFactor,
-      shaderEdgeDistanceDivisor: config.shaderEdgeDistanceDivisor,
-    }),
-    edgeMask: config.edgeMask,
-    edgeMaskPreserveDistortion: config.edgeMaskPreserveDistortion,
-    edgeMaskArithmeticBlend: config.edgeMaskArithmeticBlend,
-    border: config.border,
-    lightness: config.lightness,
-    alpha: config.alpha,
-    blur: config.blur,
-    displace: config.displace,
-    blend: config.blend,
-    x: config.x,
-    y: config.y,
-    r: config.r,
-    g: config.g,
-    b: config.b,
-    warp: config.warp,
-    shine: config.shine,
-    hover: config.hover,
-    interactions: config.interactions,
-    overlays: config.overlays,
-  };
-
-  return `const glassConfig = ${JSON.stringify(cleanConfig, null, 2)};
-
-// Usage:
-// new GlassEffect(element, glassConfig);`;
-}
-
-function generateDataAttributes(config: DemoConfig): string {
-  const attrs: string[] = [];
-
-  attrs.push(`data-glass-scale="${config.scale}"`);
-  attrs.push(`data-glass-radius="${config.radius}"`);
-  attrs.push(`data-glass-frost="${config.frost}"`);
-  attrs.push(`data-glass-saturation="${config.saturation}"`);
-  attrs.push(`data-glass-backdrop-blur="${config.backdropBlur}"`);
-  attrs.push(`data-glass-over-light="${config.overLight}"`);
-  attrs.push(`data-glass-mode="${config.mode}"`);
-
-  if (config.mode === "shader") {
-    attrs.push(
-      `data-glass-shader-edge-fade-start="${config.shaderEdgeFadeStart}"`
-    );
-    attrs.push(
-      `data-glass-shader-edge-fade-offset="${config.shaderEdgeFadeOffset}"`
-    );
-    attrs.push(
-      `data-glass-shader-corner-radius="${config.shaderCornerRadius}"`
-    );
-    attrs.push(`data-glass-shader-width-factor="${config.shaderWidthFactor}"`);
-    attrs.push(
-      `data-glass-shader-height-factor="${config.shaderHeightFactor}"`
-    );
-    attrs.push(
-      `data-glass-shader-edge-distance-divisor="${config.shaderEdgeDistanceDivisor}"`
-    );
-  }
-
-  attrs.push(`data-glass-edge-mask="${config.edgeMask}"`);
-  attrs.push(
-    `data-glass-edge-mask-preserve-distortion="${config.edgeMaskPreserveDistortion}"`
-  );
-  attrs.push(
-    `data-glass-edge-mask-arithmetic-blend="${config.edgeMaskArithmeticBlend}"`
-  );
-  attrs.push(`data-glass-border="${config.border}"`);
-  attrs.push(`data-glass-lightness="${config.lightness}"`);
-  attrs.push(`data-glass-alpha="${config.alpha}"`);
-  attrs.push(`data-glass-blur="${config.blur}"`);
-  attrs.push(`data-glass-displace="${config.displace}"`);
-  attrs.push(`data-glass-blend="${config.blend}"`);
-  attrs.push(`data-glass-x="${config.x}"`);
-  attrs.push(`data-glass-y="${config.y}"`);
-  attrs.push(`data-glass-r="${config.r}"`);
-  attrs.push(`data-glass-g="${config.g}"`);
-  attrs.push(`data-glass-b="${config.b}"`);
-
-  return `<div data-glass-effect"\n  ${attrs.join(
-    "\n  "
-  )}>\n  <!-- Your content here -->\n</div>`;
-}
-
-function generateSVGCode(glassEffectRef: React.MutableRefObject<any>): string {
-  try {
-    if (!glassEffectRef.current) {
-      return "<!-- Glass effect not initialized yet -->";
-    }
-
-    // Get the displacement map data URL from the glass effect
-    const dataUrl = glassEffectRef.current.cachedDisplacementMap;
-    if (!dataUrl) {
-      return "<!-- Displacement map not generated yet -->";
-    }
-
-    // If it's a data URL with SVG, decode it
-    if (dataUrl.startsWith("data:image/svg+xml,")) {
-      const svgContent = decodeURIComponent(
-        dataUrl.replace("data:image/svg+xml,", "")
-      );
-      return svgContent;
-    }
-
-    // If it's a shader mode (canvas data URL), return info
-    if (dataUrl.startsWith("data:image/png")) {
-      return `<!-- Shader mode uses a canvas-generated PNG data URL.
-   This cannot be exported as static SVG.
-   Data URL: ${dataUrl.substring(0, 100)}... -->`;
-    }
-
-    return dataUrl;
-  } catch (e) {
-    return `<!-- SVG generation error: ${e} -->`;
-  }
 }
