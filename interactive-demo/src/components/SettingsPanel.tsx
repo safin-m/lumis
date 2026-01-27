@@ -28,7 +28,7 @@ import type { DemoConfig } from "@/types/glass-config";
 import type { GlassEffect } from "@/assets/js/glass-effect.esm.js";
 import { rgbaString } from "@/utils/colorUtils";
 import { ChevronDown, ChevronUp, Settings } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ColorPickerCustom } from "./ColorPickerCustom";
 import { GradientPicker } from "./GradientPicker";
 
@@ -221,6 +221,132 @@ export function SettingsPanel({
       }
     });
     return out;
+  };
+
+  // Presets: save/load to localStorage
+  const PRESETS_KEY = "glass-presets";
+  const [presets, setPresets] = useState<
+    Array<{ name: string; config: DemoConfig }>
+  >([]);
+
+  const [addingPreset, setAddingPreset] = useState(false);
+  const [newPresetName, setNewPresetName] = useState("");
+  const newPresetRef = useRef<HTMLInputElement | null>(null);
+  const editRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (addingPreset && newPresetRef.current) {
+      newPresetRef.current.focus();
+      newPresetRef.current.select();
+    }
+    if (editingIndex !== null && editRef.current) {
+      editRef.current.focus();
+      editRef.current.select();
+    }
+  }, [addingPreset]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PRESETS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setPresets(parsed);
+      }
+    } catch (e) {
+      console.error("Failed to load presets from localStorage:", e);
+    }
+  }, []);
+
+  const savePresets = (next: typeof presets) => {
+    setPresets(next);
+    try {
+      localStorage.setItem(PRESETS_KEY, JSON.stringify(next));
+    } catch (e) {
+      console.error("Failed to save presets to localStorage:", e);
+    }
+  };
+
+  const makeNextPresetName = () => {
+    const base = "preset-";
+    const nums = presets
+      .map((p) => {
+        const m = p.name.match(/^preset-(\d+)$/i);
+        return m ? Number(m[1]) : null;
+      })
+      .filter((n) => n !== null) as number[];
+    let i = 1;
+    while (nums.includes(i)) i++;
+    return `${base}${i}`;
+  };
+
+  const addPreset = (name?: string) => {
+    const finalName = (name || "").trim() || makeNextPresetName();
+    const copy = JSON.parse(JSON.stringify(config)) as DemoConfig;
+    const next = [...presets, { name: finalName, config: copy }];
+    savePresets(next);
+  };
+
+  const applyPreset = (p: { name: string; config: DemoConfig }) => {
+    const merged = mergeDeep(config, p.config);
+    onConfigChange(merged as DemoConfig);
+  };
+
+  const deletePreset = (index: number) => {
+    const next = presets.filter((_, i) => i !== index);
+    savePresets(next);
+  };
+
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingName, setEditingName] = useState("");
+
+  const startEdit = (i: number) => {
+    setEditingIndex(i);
+    setEditingName(presets[i].name);
+  };
+
+  const commitEdit = (i: number) => {
+    const name = (editingName || "").trim() || presets[i].name;
+    const next = presets.map((p, idx) => (idx === i ? { ...p, name } : p));
+    savePresets(next);
+    setEditingIndex(null);
+    setEditingName("");
+  };
+
+  const cancelEdit = () => {
+    setEditingIndex(null);
+    setEditingName("");
+  };
+
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+
+  const collectDiffs = (
+    a: any,
+    b: any,
+    prefix = "",
+    depth = 0,
+    maxDepth = 2,
+  ): string[] => {
+    if (depth > maxDepth) return [];
+    const lines: string[] = [];
+    const keys = Array.from(
+      new Set([...(a ? Object.keys(a) : []), ...(b ? Object.keys(b) : [])]),
+    );
+    keys.forEach((k) => {
+      const pa = a ? a[k] : undefined;
+      const pb = b ? b[k] : undefined;
+      const path = prefix ? `${prefix}.${k}` : k;
+      if (
+        typeof pa === "object" &&
+        pa !== null &&
+        typeof pb === "object" &&
+        pb !== null
+      ) {
+        lines.push(...collectDiffs(pa, pb, path, depth + 1, maxDepth));
+      } else if (String(pa) !== String(pb)) {
+        lines.push(`${path}: ${JSON.stringify(pa)} → ${JSON.stringify(pb)}`);
+      }
+    });
+    return lines;
   };
 
   return (
@@ -1317,6 +1443,145 @@ export function SettingsPanel({
           </Section>
 
           <Section title="Config">
+            <Section title="Presets">
+              <div className="space-y-2">
+                <div className="flex items-center justify-end">
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        if (addingPreset) {
+                          setNewPresetName("");
+                          setAddingPreset(false);
+                        } else {
+                          setNewPresetName("");
+                          setAddingPreset(true);
+                        }
+                      }}
+                      className="bg-white/10 hover:bg-white/20 text-white"
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  {presets.length === 0 && !addingPreset ? (
+                    <div className="text-xs text-white/60">
+                      No presets saved
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {addingPreset && (
+                        <div className="flex items-center justify-between p-2 rounded bg-black/10">
+                          <input
+                            ref={newPresetRef}
+                            value={newPresetName}
+                            onChange={(e) => setNewPresetName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                addPreset(newPresetName || undefined);
+                                setNewPresetName("");
+                                setAddingPreset(false);
+                              } else if (e.key === "Escape") {
+                                setNewPresetName("");
+                                setAddingPreset(false);
+                              }
+                            }}
+                            onBlur={() => {
+                              // Defocus cancels adding
+                              setNewPresetName("");
+                              setAddingPreset(false);
+                            }}
+                            placeholder="preset name (optional)"
+                            className="w-full bg-black/30 border border-white/10 text-white rounded px-2 py-1 text-sm"
+                          />
+                        </div>
+                      )}
+
+                      {presets.map((p, i) => {
+                        const diffs = collectDiffs(config, p.config);
+                        return (
+                          <div
+                            key={i}
+                            onMouseEnter={() => setHoverIndex(i)}
+                            onMouseLeave={() => setHoverIndex(null)}
+                            className="group flex flex-col p-2 rounded bg-black/20 hover:bg-white/5"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1 pr-2">
+                                {editingIndex === i ? (
+                                  <input
+                                    ref={editRef}
+                                    value={editingName}
+                                    onChange={(e) =>
+                                      setEditingName(e.target.value)
+                                    }
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") commitEdit(i);
+                                      else if (e.key === "Escape") cancelEdit();
+                                    }}
+                                    onBlur={() => cancelEdit()}
+                                    className="w-full bg-black/30 border border-white/10 text-white rounded px-2 py-1 text-sm"
+                                  />
+                                ) : (
+                                  <div className="text-sm text-white truncate pl-2">
+                                    {p.name}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => applyPreset(p)}
+                                  className="bg-white/10 hover:bg-white/20 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  Apply
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  onClick={() => startEdit(i)}
+                                  className="bg-white/10 hover:bg-white/20 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  Edit
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  onClick={() => deletePreset(i)}
+                                  className="bg-red-400 hover:bg-red-700 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </div>
+
+                            {hoverIndex === i && diffs.length > 0 && (
+                              <div className="mt-2 text-xs text-white/70 bg-black/10 rounded p-2">
+                                {diffs.slice(0, 6).map((line, idx) => (
+                                  <div key={idx} className="truncate">
+                                    {line}
+                                  </div>
+                                ))}
+                                {diffs.length > 6 && (
+                                  <div className="text-xs text-white/50">
+                                    ...and {diffs.length - 6} more
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Section>
             <Section title="Import Config">
               <div className="space-y-2">
                 <Label className="text-white">Paste JavaScript config</Label>
