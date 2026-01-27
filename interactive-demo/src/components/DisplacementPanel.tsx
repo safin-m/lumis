@@ -71,9 +71,9 @@ export function DisplacementPanel({ glassEffectRef }: Props) {
         <div className="flex items-center justify-between p-3 border-b border-white/10">
           <h3 className="text-white font-semibold">Displacement</h3>
         </div>
-        <div className="p-3 space-y-3 max-h-[30vh] overflow-y-auto">
+        <div className="p-3 space-y-3 max-h-[40vh] overflow-y-auto">
           <div>
-            <div className="text-sm text-white/70 mb-2">Preview</div>
+            <div className="text-sm text-white/70 mb-2">Filter Image</div>
             <div className="w-full h-full bg-white/5 rounded flex items-center justify-center">
               {dataUrl ? (
                 dataUrl.startsWith("data:image/svg+xml,") && svgContent ? (
@@ -111,21 +111,25 @@ export function DisplacementPanel({ glassEffectRef }: Props) {
           </div>
 
           <div>
-            <div className="text-sm text-white/70 mb-2">Distortion demo</div>
+            <div className="text-sm text-white/70 mb-2">Distortion</div>
             <div
               className="w-full h-32 rounded overflow-hidden"
-              style={{ background: "linear-gradient(135deg,#1f2937,#4b5563)" }}
+              style={{ background: "linear-gradient(135deg,#6d28d9,#06b6d4)" }}
             >
               <div className="w-full h-full flex items-center justify-center">
                 <div
                   className="rounded w-11/12 h-3/4"
                   style={{
-                    background: "rgba(255,255,255,0.06)",
-                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.03)",
+                    background:
+                      "linear-gradient(90deg, rgba(255,215,0,0.18), rgba(255,255,255,0.06))",
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    boxShadow:
+                      "0 10px 30px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.03)",
                     backdropFilter: filterId ? `url(#${filterId})` : undefined,
                     WebkitBackdropFilter: filterId
                       ? `url(#${filterId})`
                       : undefined,
+                    mixBlendMode: "overlay",
                   }}
                 />
               </div>
