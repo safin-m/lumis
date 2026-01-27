@@ -7,6 +7,7 @@ interface Props {
 export function DisplacementPanel({ glassEffectRef }: Props) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [svgContent, setSvgContent] = useState<string | null>(null);
+  const [filterId, setFilterId] = useState<string | null>(null);
 
   useEffect(() => {
     const update = () => {
@@ -14,6 +15,8 @@ export function DisplacementPanel({ glassEffectRef }: Props) {
         const url: string | undefined =
           glassEffectRef.current?.cachedDisplacementMap;
         setDataUrl(url || null);
+
+        setFilterId(glassEffectRef.current?.filterId || null);
 
         if (url && url.startsWith("data:image/svg+xml,")) {
           const decoded = decodeURIComponent(
@@ -104,6 +107,28 @@ export function DisplacementPanel({ glassEffectRef }: Props) {
               ) : (
                 <div className="text-xs text-white/50">Not generated yet</div>
               )}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-sm text-white/70 mb-2">Distortion demo</div>
+            <div
+              className="w-full h-32 rounded overflow-hidden"
+              style={{ background: "linear-gradient(135deg,#1f2937,#4b5563)" }}
+            >
+              <div className="w-full h-full flex items-center justify-center">
+                <div
+                  className="rounded w-11/12 h-3/4"
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.03)",
+                    backdropFilter: filterId ? `url(#${filterId})` : undefined,
+                    WebkitBackdropFilter: filterId
+                      ? `url(#${filterId})`
+                      : undefined,
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
