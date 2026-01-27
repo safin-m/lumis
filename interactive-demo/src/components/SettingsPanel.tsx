@@ -138,7 +138,7 @@ export function SettingsPanel({
    */
   const updateNestedConfig = <K extends keyof DemoConfig>(
     key: K,
-    updates: Partial<DemoConfig[K]>
+    updates: Partial<DemoConfig[K]>,
   ) => {
     onConfigChange({
       ...config,
@@ -149,7 +149,7 @@ export function SettingsPanel({
   // Local state for debounced inputs
   const [elasticity, setElasticity] = useState(config.interactions.elasticity);
   const [activationZone, setActivationZone] = useState(
-    config.interactions.activationZone
+    config.interactions.activationZone,
   );
 
   // Keep local state in sync with external config changes
@@ -169,6 +169,59 @@ export function SettingsPanel({
   const debouncedSetActivationZone = useDebounce((v: number) => {
     updateNestedConfig("interactions", { activationZone: v });
   }, 200);
+
+  const [importText, setImportText] = useState<string>("");
+  const [importError, setImportError] = useState<string | null>(null);
+
+  const parseConfigFromText = (text: string) => {
+    // Try to extract the first top-level object literal and evaluate it safely
+    const firstBrace = text.indexOf("{");
+    if (firstBrace === -1) throw new Error("No object literal found in input.");
+
+    // Find matching closing brace
+    let depth = 0;
+    let end = -1;
+    for (let i = firstBrace; i < text.length; i++) {
+      if (text[i] === "{") depth++;
+      else if (text[i] === "}") {
+        depth--;
+        if (depth === 0) {
+          end = i;
+          break;
+        }
+      }
+    }
+    if (end === -1) throw new Error("Unbalanced braces in input.");
+
+    const objStr = text.slice(firstBrace, end + 1);
+
+    // Use Function to parse object literal (avoids executing surrounding script)
+    // Note: this still executes JS expressions inside the object; only use in trusted/demo environments
+    // eslint-disable-next-line no-new-func
+    const parsed = new Function(`return (${objStr});`)();
+    if (typeof parsed !== "object" || parsed === null) {
+      throw new Error("Parsed value is not an object.");
+    }
+    return parsed;
+  };
+
+  const mergeDeep = (target: any, source: any): any => {
+    if (typeof target !== "object" || target === null) return source;
+    const out: any = Array.isArray(target) ? [...target] : { ...target };
+    if (typeof source !== "object" || source === null) return out;
+    Object.keys(source).forEach((key) => {
+      const sVal = (source as any)[key];
+      const tVal = out[key];
+      if (Array.isArray(sVal)) {
+        out[key] = sVal.slice();
+      } else if (typeof sVal === "object" && sVal !== null) {
+        out[key] = mergeDeep(tVal === undefined ? {} : tVal, sVal);
+      } else {
+        out[key] = sVal;
+      }
+    });
+    return out;
+  };
 
   return (
     <div className="fixed top-4 right-4 w-96 bg-black/80 backdrop-blur-md border border-white/20 rounded-lg shadow-2xl z-50">
@@ -996,13 +1049,13 @@ export function SettingsPanel({
                         let background = "";
                         if (gradient.type === "radial") {
                           background = `radial-gradient(circle at center, ${rgbaString(
-                            gradient.color1
+                            gradient.color1,
                           )} 0%, ${rgbaString(gradient.color2)} 100%)`;
                         } else {
                           background = `linear-gradient(${
                             gradient.angle
                           }deg, ${rgbaString(gradient.color1)} 0%, ${rgbaString(
-                            gradient.color2
+                            gradient.color2,
                           )} 100%)`;
                         }
                         updateNestedConfig("overlays", {
@@ -1263,7 +1316,68 @@ export function SettingsPanel({
             </div>
           </Section>
 
-          <Section title="Export Configuration">
+          <Section title="Config">
+            <Section title="Import Config">
+              <div className="space-y-2">
+                <Label className="text-white">Paste JavaScript config</Label>
+                <textarea
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                  placeholder="Paste the JavaScript config here (e.g. const glassConfig = {...})"
+                  className="w-full rounded bg-black/30 border border-white/10 p-2 text-sm text-white placeholder-white/40"
+                  rows={6}
+                />
+
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const text = await navigator.clipboard.readText();
+                        setImportText(text);
+                      } catch (e) {
+                        setImportError("Unable to read clipboard");
+                      }
+                    }}
+                    className="bg-white/10 hover:bg-white/20 text-white"
+                  >
+                    Paste from clipboard
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      try {
+                        const parsed = parseConfigFromText(importText);
+                        const merged = mergeDeep(config, parsed);
+                        onConfigChange(merged as DemoConfig);
+                        setImportError(null);
+                      } catch (err: any) {
+                        setImportError(err?.message || String(err));
+                      }
+                    }}
+                    className="bg-white/10 hover:bg-white/20 text-white"
+                  >
+                    Apply
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setImportText("");
+                      setImportError(null);
+                    }}
+                    className="bg-white-600 hover:bg-white/20 text-white"
+                  >
+                    Clear
+                  </Button>
+                </div>
+
+                {importError && (
+                  <div className="text-xs text-red-400">{importError}</div>
+                )}
+              </div>
+            </Section>
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
