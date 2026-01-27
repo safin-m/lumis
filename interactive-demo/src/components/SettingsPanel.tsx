@@ -1,3 +1,12 @@
+/**
+ * SettingsPanel Component
+ *
+ * A comprehensive settings panel for configuring all aspects of the glass effect.
+ * Provides real-time controls for visual parameters, interactions, overlays,
+ * and code generation for developers.
+ */
+
+import "@/assets/styles/scrollbar.css";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -8,30 +17,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import {
+  generateConfigCode,
+  generateDataAttributes,
+  generateSVGCode,
+} from "@/helpers/codeGenerators";
+import { useDebounce } from "@/hooks";
 import type { DemoConfig } from "@/types/glass-config";
-import { ChevronDown, ChevronUp, Settings } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { ColorPickerCustom } from "./ColorPickerCustom";
-import { debounce } from "./debounce";
-import { GradientPicker } from "./GradientPicker";
-import "./settings-panel-scrollbar.css";
 
-// Helper for rgba string
-function rgbaString(color: string) {
-  const match = color.match(/^(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?$/);
-  if (match) {
-    const [r, g, b, a] = [match[1], match[2], match[3], match[4] ?? "1"];
-    return `rgba(${r}, ${g}, ${b}, ${a})`;
-  }
-  return color;
-}
+import type { GlassEffect } from "@/assets/js/glass-effect.esm.js";
+import { rgbaString } from "@/utils/colorUtils";
+import { ChevronDown, ChevronUp, Settings } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ColorPickerCustom } from "./ColorPickerCustom";
+import { GradientPicker } from "./GradientPicker";
 
 interface SettingsPanelProps {
+  /** The current glass effect configuration */
   config: DemoConfig;
+  /** Callback fired when configuration changes */
   onConfigChange: (config: DemoConfig) => void;
-  glassEffectRef: React.MutableRefObject<any>;
+  /** Reference to the glass effect instance */
+  glassEffectRef: React.MutableRefObject<GlassEffect | null>;
 }
 
+/**
+ * SliderControl - A reusable slider component with label and value display
+ */
 function SliderControl({
   label,
   value,
@@ -65,6 +77,9 @@ function SliderControl({
   );
 }
 
+/**
+ * Section - A collapsible section component for organizing settings
+ */
 function Section({
   title,
   header,
@@ -100,6 +115,10 @@ function Section({
   );
 }
 
+/**
+ * SettingsPanel - Main settings panel component
+ * Provides a comprehensive UI for adjusting all glass effect parameters
+ */
 export function SettingsPanel({
   config,
   onConfigChange,
@@ -107,13 +126,19 @@ export function SettingsPanel({
 }: SettingsPanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  /**
+   * Updates top-level configuration properties
+   */
   const updateConfig = (updates: Partial<DemoConfig>) => {
     onConfigChange({ ...config, ...updates });
   };
 
+  /**
+   * Updates nested configuration properties (like interactions, overlays)
+   */
   const updateNestedConfig = <K extends keyof DemoConfig>(
     key: K,
-    updates: Partial<DemoConfig[K]>
+    updates: Partial<DemoConfig[K]>,
   ) => {
     onConfigChange({
       ...config,
@@ -121,34 +146,208 @@ export function SettingsPanel({
     });
   };
 
-  // Local state for elasticity and activation zone
+  // Local state for debounced inputs
   const [elasticity, setElasticity] = useState(config.interactions.elasticity);
   const [activationZone, setActivationZone] = useState(
-    config.interactions.activationZone
+    config.interactions.activationZone,
   );
 
-  // Keep local state in sync with config changes from outside
+  // Keep local state in sync with external config changes
   useEffect(() => {
     setElasticity(config.interactions.elasticity);
   }, [config.interactions.elasticity]);
+
   useEffect(() => {
     setActivationZone(config.interactions.activationZone);
   }, [config.interactions.activationZone]);
 
-  // Debounced config update for elasticity
-  const debouncedSetElasticity = useCallback(
-    debounce((v: number) => {
-      updateNestedConfig("interactions", { elasticity: v });
-    }, 200),
-    [config]
-  );
-  // Debounced config update for activation zone
-  const debouncedSetActivationZone = useCallback(
-    debounce((v: number) => {
-      updateNestedConfig("interactions", { activationZone: v });
-    }, 200),
-    [config]
-  );
+  // Debounced config updates for performance using custom hook
+  const debouncedSetElasticity = useDebounce((v: number) => {
+    updateNestedConfig("interactions", { elasticity: v });
+  }, 200);
+
+  const debouncedSetActivationZone = useDebounce((v: number) => {
+    updateNestedConfig("interactions", { activationZone: v });
+  }, 200);
+
+  const [importText, setImportText] = useState<string>("");
+  const [importError, setImportError] = useState<string | null>(null);
+
+  const parseConfigFromText = (text: string) => {
+    // Try to extract the first top-level object literal and evaluate it safely
+    const firstBrace = text.indexOf("{");
+    if (firstBrace === -1) throw new Error("No object literal found in input.");
+
+    // Find matching closing brace
+    let depth = 0;
+    let end = -1;
+    for (let i = firstBrace; i < text.length; i++) {
+      if (text[i] === "{") depth++;
+      else if (text[i] === "}") {
+        depth--;
+        if (depth === 0) {
+          end = i;
+          break;
+        }
+      }
+    }
+    if (end === -1) throw new Error("Unbalanced braces in input.");
+
+    const objStr = text.slice(firstBrace, end + 1);
+
+    // Use Function to parse object literal (avoids executing surrounding script)
+    // Note: this still executes JS expressions inside the object; only use in trusted/demo environments
+    // eslint-disable-next-line no-new-func
+    const parsed = new Function(`return (${objStr});`)();
+    if (typeof parsed !== "object" || parsed === null) {
+      throw new Error("Parsed value is not an object.");
+    }
+    return parsed;
+  };
+
+  const mergeDeep = (target: any, source: any): any => {
+    if (typeof target !== "object" || target === null) return source;
+    const out: any = Array.isArray(target) ? [...target] : { ...target };
+    if (typeof source !== "object" || source === null) return out;
+    Object.keys(source).forEach((key) => {
+      const sVal = (source as any)[key];
+      const tVal = out[key];
+      if (Array.isArray(sVal)) {
+        out[key] = sVal.slice();
+      } else if (typeof sVal === "object" && sVal !== null) {
+        out[key] = mergeDeep(tVal === undefined ? {} : tVal, sVal);
+      } else {
+        out[key] = sVal;
+      }
+    });
+    return out;
+  };
+
+  // Presets: save/load to localStorage
+  const PRESETS_KEY = "glass-presets";
+  const [presets, setPresets] = useState<
+    Array<{ name: string; config: DemoConfig }>
+  >([]);
+
+  const [addingPreset, setAddingPreset] = useState(false);
+  const [newPresetName, setNewPresetName] = useState("");
+  const newPresetRef = useRef<HTMLInputElement | null>(null);
+  const editRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (addingPreset && newPresetRef.current) {
+      newPresetRef.current.focus();
+      newPresetRef.current.select();
+    }
+    if (editingIndex !== null && editRef.current) {
+      editRef.current.focus();
+      editRef.current.select();
+    }
+  }, [addingPreset]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PRESETS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setPresets(parsed);
+      }
+    } catch (e) {
+      console.error("Failed to load presets from localStorage:", e);
+    }
+  }, []);
+
+  const savePresets = (next: typeof presets) => {
+    setPresets(next);
+    try {
+      localStorage.setItem(PRESETS_KEY, JSON.stringify(next));
+    } catch (e) {
+      console.error("Failed to save presets to localStorage:", e);
+    }
+  };
+
+  const makeNextPresetName = () => {
+    const base = "preset-";
+    const nums = presets
+      .map((p) => {
+        const m = p.name.match(/^preset-(\d+)$/i);
+        return m ? Number(m[1]) : null;
+      })
+      .filter((n) => n !== null) as number[];
+    let i = 1;
+    while (nums.includes(i)) i++;
+    return `${base}${i}`;
+  };
+
+  const addPreset = (name?: string) => {
+    const finalName = (name || "").trim() || makeNextPresetName();
+    const copy = JSON.parse(JSON.stringify(config)) as DemoConfig;
+    const next = [...presets, { name: finalName, config: copy }];
+    savePresets(next);
+  };
+
+  const applyPreset = (p: { name: string; config: DemoConfig }) => {
+    const merged = mergeDeep(config, p.config);
+    onConfigChange(merged as DemoConfig);
+  };
+
+  const deletePreset = (index: number) => {
+    const next = presets.filter((_, i) => i !== index);
+    savePresets(next);
+  };
+
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingName, setEditingName] = useState("");
+
+  const startEdit = (i: number) => {
+    setEditingIndex(i);
+    setEditingName(presets[i].name);
+  };
+
+  const commitEdit = (i: number) => {
+    const name = (editingName || "").trim() || presets[i].name;
+    const next = presets.map((p, idx) => (idx === i ? { ...p, name } : p));
+    savePresets(next);
+    setEditingIndex(null);
+    setEditingName("");
+  };
+
+  const cancelEdit = () => {
+    setEditingIndex(null);
+    setEditingName("");
+  };
+
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+
+  const collectDiffs = (
+    a: any,
+    b: any,
+    prefix = "",
+    depth = 0,
+    maxDepth = 2,
+  ): string[] => {
+    if (depth > maxDepth) return [];
+    const lines: string[] = [];
+    const keys = Array.from(
+      new Set([...(a ? Object.keys(a) : []), ...(b ? Object.keys(b) : [])]),
+    );
+    keys.forEach((k) => {
+      const pa = a ? a[k] : undefined;
+      const pb = b ? b[k] : undefined;
+      const path = prefix ? `${prefix}.${k}` : k;
+      if (
+        typeof pa === "object" &&
+        pa !== null &&
+        typeof pb === "object" &&
+        pb !== null
+      ) {
+        lines.push(...collectDiffs(pa, pb, path, depth + 1, maxDepth));
+      } else if (String(pa) !== String(pb)) {
+        lines.push(`${path}: ${JSON.stringify(pa)} → ${JSON.stringify(pb)}`);
+      }
+    });
+    return lines;
+  };
 
   return (
     <div className="fixed top-4 right-4 w-96 bg-black/80 backdrop-blur-md border border-white/20 rounded-lg shadow-2xl z-50">
@@ -976,13 +1175,13 @@ export function SettingsPanel({
                         let background = "";
                         if (gradient.type === "radial") {
                           background = `radial-gradient(circle at center, ${rgbaString(
-                            gradient.color1
+                            gradient.color1,
                           )} 0%, ${rgbaString(gradient.color2)} 100%)`;
                         } else {
                           background = `linear-gradient(${
                             gradient.angle
                           }deg, ${rgbaString(gradient.color1)} 0%, ${rgbaString(
-                            gradient.color2
+                            gradient.color2,
                           )} 100%)`;
                         }
                         updateNestedConfig("overlays", {
@@ -1243,7 +1442,207 @@ export function SettingsPanel({
             </div>
           </Section>
 
-          <Section title="Export Configuration">
+          <Section title="Config">
+            <Section title="Presets">
+              <div className="space-y-2">
+                <div className="flex items-center justify-end">
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        if (addingPreset) {
+                          setNewPresetName("");
+                          setAddingPreset(false);
+                        } else {
+                          setNewPresetName("");
+                          setAddingPreset(true);
+                        }
+                      }}
+                      className="bg-white/10 hover:bg-white/20 text-white"
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  {presets.length === 0 && !addingPreset ? (
+                    <div className="text-xs text-white/60">
+                      No presets saved
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {addingPreset && (
+                        <div className="flex items-center justify-between p-2 rounded bg-black/10">
+                          <input
+                            ref={newPresetRef}
+                            value={newPresetName}
+                            onChange={(e) => setNewPresetName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                addPreset(newPresetName || undefined);
+                                setNewPresetName("");
+                                setAddingPreset(false);
+                              } else if (e.key === "Escape") {
+                                setNewPresetName("");
+                                setAddingPreset(false);
+                              }
+                            }}
+                            onBlur={() => {
+                              // Defocus cancels adding
+                              setNewPresetName("");
+                              setAddingPreset(false);
+                            }}
+                            placeholder="preset name (optional)"
+                            className="w-full bg-black/30 border border-white/10 text-white rounded px-2 py-1 text-sm"
+                          />
+                        </div>
+                      )}
+
+                      {presets.map((p, i) => {
+                        const diffs = collectDiffs(config, p.config);
+                        return (
+                          <div
+                            key={i}
+                            onMouseEnter={() => setHoverIndex(i)}
+                            onMouseLeave={() => setHoverIndex(null)}
+                            className="group flex flex-col p-2 rounded bg-black/20 hover:bg-white/5"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1 pr-2">
+                                {editingIndex === i ? (
+                                  <input
+                                    ref={editRef}
+                                    value={editingName}
+                                    onChange={(e) =>
+                                      setEditingName(e.target.value)
+                                    }
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") commitEdit(i);
+                                      else if (e.key === "Escape") cancelEdit();
+                                    }}
+                                    onBlur={() => cancelEdit()}
+                                    className="w-full bg-black/30 border border-white/10 text-white rounded px-2 py-1 text-sm"
+                                  />
+                                ) : (
+                                  <div className="text-sm text-white truncate pl-2">
+                                    {p.name}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => applyPreset(p)}
+                                  className="bg-white/10 hover:bg-white/20 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  Apply
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  onClick={() => startEdit(i)}
+                                  className="bg-white/10 hover:bg-white/20 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  Edit
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  onClick={() => deletePreset(i)}
+                                  className="bg-red-400 hover:bg-red-700 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </div>
+
+                            {hoverIndex === i && diffs.length > 0 && (
+                              <div className="mt-2 text-xs text-white/70 bg-black/10 rounded p-2">
+                                {diffs.slice(0, 6).map((line, idx) => (
+                                  <div key={idx} className="truncate">
+                                    {line}
+                                  </div>
+                                ))}
+                                {diffs.length > 6 && (
+                                  <div className="text-xs text-white/50">
+                                    ...and {diffs.length - 6} more
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Section>
+            <Section title="Import Config">
+              <div className="space-y-2">
+                <Label className="text-white">Paste JavaScript config</Label>
+                <textarea
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                  placeholder="Paste the JavaScript config here (e.g. const glassConfig = {...})"
+                  className="w-full rounded bg-black/30 border border-white/10 p-2 text-sm text-white placeholder-white/40"
+                  rows={6}
+                />
+
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const text = await navigator.clipboard.readText();
+                        setImportText(text);
+                      } catch (e) {
+                        setImportError("Unable to read clipboard");
+                      }
+                    }}
+                    className="bg-white/10 hover:bg-white/20 text-white"
+                  >
+                    Paste from clipboard
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      try {
+                        const parsed = parseConfigFromText(importText);
+                        const merged = mergeDeep(config, parsed);
+                        onConfigChange(merged as DemoConfig);
+                        setImportError(null);
+                      } catch (err: any) {
+                        setImportError(err?.message || String(err));
+                      }
+                    }}
+                    className="bg-white/10 hover:bg-white/20 text-white"
+                  >
+                    Apply
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setImportText("");
+                      setImportError(null);
+                    }}
+                    className="bg-white-600 hover:bg-white/20 text-white"
+                  >
+                    Clear
+                  </Button>
+                </div>
+
+                {importError && (
+                  <div className="text-xs text-red-400">{importError}</div>
+                )}
+              </div>
+            </Section>
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -1339,136 +1738,4 @@ export function SettingsPanel({
       )}
     </div>
   );
-}
-
-// Helper functions for code generation
-function generateConfigCode(config: DemoConfig): string {
-  const cleanConfig = {
-    scale: config.scale,
-    radius: config.radius,
-    frost: config.frost,
-    saturation: config.saturation,
-    backdropBlur: config.backdropBlur,
-    overLight: config.overLight,
-    mode: config.mode,
-    ...(config.mode === "shader" && {
-      shaderEdgeFadeStart: config.shaderEdgeFadeStart,
-      shaderEdgeFadeOffset: config.shaderEdgeFadeOffset,
-      shaderCornerRadius: config.shaderCornerRadius,
-      shaderWidthFactor: config.shaderWidthFactor,
-      shaderHeightFactor: config.shaderHeightFactor,
-      shaderEdgeDistanceDivisor: config.shaderEdgeDistanceDivisor,
-    }),
-    edgeMask: config.edgeMask,
-    edgeMaskPreserveDistortion: config.edgeMaskPreserveDistortion,
-    edgeMaskArithmeticBlend: config.edgeMaskArithmeticBlend,
-    border: config.border,
-    lightness: config.lightness,
-    alpha: config.alpha,
-    blur: config.blur,
-    displace: config.displace,
-    blend: config.blend,
-    x: config.x,
-    y: config.y,
-    r: config.r,
-    g: config.g,
-    b: config.b,
-    warp: config.warp,
-    shine: config.shine,
-    hover: config.hover,
-    interactions: config.interactions,
-    overlays: config.overlays,
-  };
-
-  return `const glassConfig = ${JSON.stringify(cleanConfig, null, 2)};
-
-// Usage:
-// new GlassEffect(element, glassConfig);`;
-}
-
-function generateDataAttributes(config: DemoConfig): string {
-  const attrs: string[] = [];
-
-  attrs.push(`data-glass-scale="${config.scale}"`);
-  attrs.push(`data-glass-radius="${config.radius}"`);
-  attrs.push(`data-glass-frost="${config.frost}"`);
-  attrs.push(`data-glass-saturation="${config.saturation}"`);
-  attrs.push(`data-glass-backdrop-blur="${config.backdropBlur}"`);
-  attrs.push(`data-glass-over-light="${config.overLight}"`);
-  attrs.push(`data-glass-mode="${config.mode}"`);
-
-  if (config.mode === "shader") {
-    attrs.push(
-      `data-glass-shader-edge-fade-start="${config.shaderEdgeFadeStart}"`
-    );
-    attrs.push(
-      `data-glass-shader-edge-fade-offset="${config.shaderEdgeFadeOffset}"`
-    );
-    attrs.push(
-      `data-glass-shader-corner-radius="${config.shaderCornerRadius}"`
-    );
-    attrs.push(`data-glass-shader-width-factor="${config.shaderWidthFactor}"`);
-    attrs.push(
-      `data-glass-shader-height-factor="${config.shaderHeightFactor}"`
-    );
-    attrs.push(
-      `data-glass-shader-edge-distance-divisor="${config.shaderEdgeDistanceDivisor}"`
-    );
-  }
-
-  attrs.push(`data-glass-edge-mask="${config.edgeMask}"`);
-  attrs.push(
-    `data-glass-edge-mask-preserve-distortion="${config.edgeMaskPreserveDistortion}"`
-  );
-  attrs.push(
-    `data-glass-edge-mask-arithmetic-blend="${config.edgeMaskArithmeticBlend}"`
-  );
-  attrs.push(`data-glass-border="${config.border}"`);
-  attrs.push(`data-glass-lightness="${config.lightness}"`);
-  attrs.push(`data-glass-alpha="${config.alpha}"`);
-  attrs.push(`data-glass-blur="${config.blur}"`);
-  attrs.push(`data-glass-displace="${config.displace}"`);
-  attrs.push(`data-glass-blend="${config.blend}"`);
-  attrs.push(`data-glass-x="${config.x}"`);
-  attrs.push(`data-glass-y="${config.y}"`);
-  attrs.push(`data-glass-r="${config.r}"`);
-  attrs.push(`data-glass-g="${config.g}"`);
-  attrs.push(`data-glass-b="${config.b}"`);
-
-  return `<div data-glass-effect"\n  ${attrs.join(
-    "\n  "
-  )}>\n  <!-- Your content here -->\n</div>`;
-}
-
-function generateSVGCode(glassEffectRef: React.MutableRefObject<any>): string {
-  try {
-    if (!glassEffectRef.current) {
-      return "<!-- Glass effect not initialized yet -->";
-    }
-
-    // Get the displacement map data URL from the glass effect
-    const dataUrl = glassEffectRef.current.cachedDisplacementMap;
-    if (!dataUrl) {
-      return "<!-- Displacement map not generated yet -->";
-    }
-
-    // If it's a data URL with SVG, decode it
-    if (dataUrl.startsWith("data:image/svg+xml,")) {
-      const svgContent = decodeURIComponent(
-        dataUrl.replace("data:image/svg+xml,", "")
-      );
-      return svgContent;
-    }
-
-    // If it's a shader mode (canvas data URL), return info
-    if (dataUrl.startsWith("data:image/png")) {
-      return `<!-- Shader mode uses a canvas-generated PNG data URL.
-   This cannot be exported as static SVG.
-   Data URL: ${dataUrl.substring(0, 100)}... -->`;
-    }
-
-    return dataUrl;
-  } catch (e) {
-    return `<!-- SVG generation error: ${e} -->`;
-  }
 }

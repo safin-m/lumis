@@ -1,108 +1,67 @@
+/**
+ * ColorPickerCustom Component
+ *
+ * A custom color picker with a hue ring and saturation/lightness square.
+ * Supports both mouse and touch interactions for mobile compatibility.
+ * Colors are managed in "R, G, B, A" format for consistency with the glass effect library.
+ */
+
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import {
+  formatRgbaString,
+  hslaToRgba,
+  parseRgba,
+  rgbaToHsla,
+} from "@/utils/colorUtils";
 import * as Popover from "@radix-ui/react-popover";
 import { X } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 interface ColorPickerCustomProps {
+  /** Label for the color picker */
   label: string;
-  value: string; // "R, G, B, A" format
+  /** Color value in "R, G, B, A" format */
+  value: string;
+  /** Callback fired when color changes */
   onChange: (value: string) => void;
 }
 
-function hslaToRgba(
-  h: number,
-  s: number,
-  l: number,
-  _a: number // intentionally unused in this function, but needed for signature
-): { r: number; g: number; b: number } {
-  s /= 100;
-  l /= 100;
-  const c = (1 - Math.abs(2 * l - 1)) * s;
-  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-  const m = l - c / 2;
-
-  let r = 0,
-    g = 0,
-    b = 0;
-
-  if (h >= 0 && h < 60) {
-    r = c;
-    g = x;
-    b = 0;
-  } else if (h >= 60 && h < 120) {
-    r = x;
-    g = c;
-    b = 0;
-  } else if (h >= 120 && h < 180) {
-    r = 0;
-    g = c;
-    b = x;
-  } else if (h >= 180 && h < 240) {
-    r = 0;
-    g = x;
-    b = c;
-  } else if (h >= 240 && h < 300) {
-    r = x;
-    g = 0;
-    b = c;
-  } else if (h >= 300 && h < 360) {
-    r = c;
-    g = 0;
-    b = x;
-  }
-
-  return {
-    r: Math.round((r + m) * 255),
-    g: Math.round((g + m) * 255),
-    b: Math.round((b + m) * 255),
-  };
-}
-
-function rgbaToHsla(
-  r: number,
-  g: number,
-  b: number
-): { h: number; s: number; l: number } {
-  r /= 255;
-  g /= 255;
-  b /= 255;
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  let h = 0;
-  let s = 0;
-  const l = (max + min) / 2;
-
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r:
-        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-        break;
-      case g:
-        h = ((b - r) / d + 2) / 6;
-        break;
-      case b:
-        h = ((r - g) / d + 4) / 6;
-        break;
-    }
-  }
-
-  return {
-    h: Math.round(h * 360),
-    s: Math.round(s * 100),
-    l: Math.round(l * 100),
-  };
-}
-
+/**
+ * ColorPickerCustom provides an intuitive color selection interface
+ * with a circular hue selector and square saturation/lightness picker
+ */
 export function ColorPickerCustom({
   label,
   value,
   onChange,
 }: ColorPickerCustomProps) {
-  // Handle hue ring interaction
+  // Popup state
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Color state in HSLA format for manipulation
+  const [hue, setHue] = useState(0);
+  const [saturation, setSaturation] = useState(100);
+  const [lightness, setLightness] = useState(50);
+  const [alpha, setAlpha] = useState(1);
+
+  // Refs for managing interactions
+  const timeoutRef = useRef<number | null>(null);
+  const prevValueRef = useRef(value);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const hueRingRef = useRef<HTMLCanvasElement>(null);
+  const isDraggingRef = useRef(false);
   const isHueDraggingRef = useRef(false);
+
+  // Canvas sizing (responsive)
+  const [hueRingSize, setHueRingSize] = useState(280);
+  const [canvasSize, setCanvasSize] = useState(168);
+  const colorSquareMultiplier = 0.64; // Ratio of color square to hue ring
+
+  /**
+   * Handles pointer interaction with the hue ring
+   * Calculates the angle from the center to determine hue value
+   */
   const handleHuePointer = (clientX: number, clientY: number) => {
     if (!hueRingRef.current) return;
     const rect = hueRingRef.current.getBoundingClientRect();
@@ -114,34 +73,40 @@ export function ColorPickerCustom({
     angle = angle < 0 ? angle + 360 : angle;
     setHue(Math.round(angle));
   };
-  // Mouse events for hue ring
+
+  // Mouse event handlers for hue ring
   const handleHueMouseMove = (e: MouseEvent) => {
     if (!isHueDraggingRef.current) return;
     handleHuePointer(e.clientX, e.clientY);
   };
+
   const handleHueMouseUp = () => {
     isHueDraggingRef.current = false;
     window.removeEventListener("mousemove", handleHueMouseMove);
     window.removeEventListener("mouseup", handleHueMouseUp);
   };
+
   const handleHueRingMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     isHueDraggingRef.current = true;
     handleHuePointer(e.clientX, e.clientY);
     window.addEventListener("mousemove", handleHueMouseMove);
     window.addEventListener("mouseup", handleHueMouseUp);
   };
-  // Touch events for hue ring
+
+  // Touch event handlers for hue ring
   const handleHueTouchMove = (e: TouchEvent) => {
     if (!isHueDraggingRef.current) return;
     if (e.touches.length > 0) {
       handleHuePointer(e.touches[0].clientX, e.touches[0].clientY);
     }
   };
+
   const handleHueTouchEnd = () => {
     isHueDraggingRef.current = false;
     window.removeEventListener("touchmove", handleHueTouchMove);
     window.removeEventListener("touchend", handleHueTouchEnd);
   };
+
   const handleHueRingTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
     isHueDraggingRef.current = true;
     if (e.touches.length > 0) {
@@ -150,29 +115,12 @@ export function ColorPickerCustom({
     window.addEventListener("touchmove", handleHueTouchMove);
     window.addEventListener("touchend", handleHueTouchEnd);
   };
-  const [isOpen, setIsOpen] = useState(false);
-  const [hue, setHue] = useState(0);
-  const [saturation, setSaturation] = useState(100);
-  const [lightness, setLightness] = useState(50);
-  const [alpha, setAlpha] = useState(1);
-  const timeoutRef = useRef<number | null>(null);
-  const prevValueRef = useRef(value);
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  // const containerRef = useRef<HTMLDivElement>(null); // unused
-  const isDraggingRef = useRef(false);
-  // For square canvas sizing
-  // Make the color square smaller so it fits inside the ring
-  const [hueRingSize, setHueRingSize] = useState(280); // outer size
-  const [canvasSize, setCanvasSize] = useState(168); // 60% of 280 by default
-  // Multiplier for color square size (change here for different ratios)
-  const colorSquareMultiplier = 0.64;
-  const hueRingRef = useRef<HTMLCanvasElement>(null);
-  // Draw the hue ring (circular hue slider)
-  // Always update sizes after popover is open and visible
+  /**
+   * Update canvas sizes when popover opens to ensure proper rendering
+   */
   useLayoutEffect(() => {
     if (isOpen && hueRingRef.current) {
-      // Wait for next frame to ensure popover is visible
       requestAnimationFrame(() => {
         const rect = hueRingRef.current!.getBoundingClientRect();
         setHueRingSize(rect.width);
@@ -183,7 +131,9 @@ export function ColorPickerCustom({
     }
   }, [isOpen, colorSquareMultiplier]);
 
-  // Keep previous effect for resize and hue changes
+  /**
+   * Draw the circular hue ring selector
+   */
   useEffect(() => {
     const drawHueRing = () => {
       if (!hueRingRef.current) return;
@@ -192,7 +142,7 @@ export function ColorPickerCustom({
       if (!ctx) return;
       const dpr = window.devicePixelRatio || 1;
       const size = Math.round(hueRingSize * dpr);
-      const ringWidth = 8 * dpr; // fixed 8px thickness (devicePixelRatio aware)
+      const ringWidth = 8 * dpr;
       const markerLineWidth = 2 * dpr;
       const markerRadius = Math.max(
         6 * dpr,
@@ -271,42 +221,13 @@ export function ColorPickerCustom({
     };
   }, [hue, isOpen, colorSquareMultiplier]);
 
-  // (removed: now handled by main effect above)
-
-  // Extract rgba values from multiple formats
-  const getRgbaValues = (color: string) => {
-    // Always return an object with r, g, b, a fields
-    if (!color || typeof color !== "string") {
-      return { r: 255, g: 255, b: 255, a: 1 };
-    }
-    // Try "R, G, B, A" format first
-    let match = color.match(/^(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?$/);
-    if (match) {
-      return {
-        r: parseInt(match[1]),
-        g: parseInt(match[2]),
-        b: parseInt(match[3]),
-        a: parseFloat(match[4] || "1"),
-      };
-    }
-    // Try rgba(...) format
-    match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-    if (match) {
-      return {
-        r: parseInt(match[1]),
-        g: parseInt(match[2]),
-        b: parseInt(match[3]),
-        a: parseFloat(match[4] || "1"),
-      };
-    }
-    // Default fallback
-    return { r: 255, g: 255, b: 255, a: 1 };
-  };
-
-  // Always sync state from value prop on mount and whenever value changes
+  /**
+   * Sync internal color state (HSLA) with external value prop (RGBA string)
+   * This ensures the picker reflects the current color value
+   */
   useEffect(() => {
     prevValueRef.current = value;
-    const { r, g, b, a } = getRgbaValues(value);
+    const { r, g, b, a } = parseRgba(value);
     const { h, s, l } = rgbaToHsla(r, g, b);
     setHue(h);
     setSaturation(s);
@@ -421,7 +342,10 @@ export function ColorPickerCustom({
     window.addEventListener("touchend", handleTouchEnd);
   };
 
-  // Update parent when color changes
+  /**
+   * Update parent component when color changes
+   * Debounced for performance during drag interactions
+   */
   useEffect(() => {
     // Clear previous timeout
     if (timeoutRef.current) {
@@ -431,7 +355,7 @@ export function ColorPickerCustom({
     // Debounce the onChange call
     timeoutRef.current = setTimeout(() => {
       const { r, g, b } = hslaToRgba(hue, saturation, lightness, alpha);
-      const newValue = `${r}, ${g}, ${b}, ${alpha}`;
+      const newValue = formatRgbaString(r, g, b, alpha);
       if (newValue !== prevValueRef.current) {
         prevValueRef.current = newValue;
         onChange(newValue);
@@ -446,7 +370,9 @@ export function ColorPickerCustom({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hue, saturation, lightness, alpha]);
 
-  // Close picker when clicking outside (using Popover's built-in functionality)
+  /**
+   * Handle Escape key to close the picker
+   */
   useEffect(() => {
     if (!isOpen) return;
 
@@ -460,7 +386,8 @@ export function ColorPickerCustom({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen]);
 
-  const { r, g, b } = getRgbaValues(value);
+  // Get current color values for preview
+  const { r, g, b } = parseRgba(value);
   const previewColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
 
   return (

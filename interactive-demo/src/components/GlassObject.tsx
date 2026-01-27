@@ -1,13 +1,62 @@
+/**
+ * GlassObject Component
+ *
+ * A draggable glass effect element that demonstrates the glass effect library.
+ * This component initializes and manages the glass effect on a DOM element,
+ * handles drag interactions, and updates the effect when configuration changes.
+ */
+
 import type { DemoConfig } from "@/types/glass-config";
+import { toCssColor } from "@/utils/colorUtils";
 import { useEffect, useRef } from "react";
 
+// Type alias for GlassEffect from ambient module declaration
+// This must match the ambient module declaration path in glass-effect-module.d.ts
+// and be relative to the importing file (src/)
+import type { GlassEffect } from "@/assets/js/glass-effect.esm.js";
+
 interface GlassObjectProps {
+  /** The glass effect configuration */
   config: DemoConfig;
+  /** The current position of the glass object */
   position: { x: number; y: number };
+  /** Callback fired when the position changes */
   onPositionChange: (position: { x: number; y: number }) => void;
-  glassEffectRef: React.MutableRefObject<any>;
+  /** Reference to the glass effect instance */
+  glassEffectRef: React.MutableRefObject<GlassEffect | null>;
 }
 
+/**
+ * Converts color values in the config to CSS-compatible format
+ * The glass effect library expects certain colors in specific formats.
+ * This function normalizes color strings to valid CSS while preserving
+ * the "R, G, B, A" format for properties that need it.
+ *
+ * @param cfg - The configuration object to process
+ * @returns Configuration with normalized color values
+ */
+function withCssColors(cfg: DemoConfig): DemoConfig {
+  return {
+    ...cfg,
+    overlays: {
+      ...cfg.overlays,
+      // Note: borderColor and hoverLightColor remain in "R, G, B, A" format
+      // as the glass effect library expects this format for these properties
+    },
+    warp: {
+      ...cfg.warp,
+      color: toCssColor(cfg.warp.color),
+    },
+    shine: {
+      ...cfg.shine,
+      color: toCssColor(cfg.shine.color),
+    },
+  };
+}
+
+/**
+ * GlassObject renders a draggable element with the glass effect applied
+ */
 export function GlassObject({
   config,
   position,
@@ -18,53 +67,15 @@ export function GlassObject({
   const isDragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
 
-  // Normalize color strings to valid CSS so the library gets usable values
-  const toCssColor = (val: string) => {
-    const trimmed = (val || "").trim();
-    if (!trimmed) return trimmed;
-
-    const lower = trimmed.toLowerCase();
-    const looksLikeCss =
-      lower.startsWith("#") ||
-      lower.startsWith("rgb") ||
-      lower.startsWith("hsl") ||
-      lower.startsWith("var(") ||
-      lower.includes("gradient");
-
-    if (looksLikeCss) return trimmed;
-
-    // Matches "R, G, B" or "R, G, B, A"
-    const rgbaList = /^\d+\s*,\s*\d+\s*,\s*\d+(\s*,\s*[\d.]+)?$/;
-    if (rgbaList.test(trimmed)) return `rgba(${trimmed})`;
-
-    return trimmed; // Fallback: leave as-is
-  };
-
-  const withCssColors = (cfg: DemoConfig): DemoConfig => ({
-    ...cfg,
-    overlays: {
-      ...cfg.overlays,
-      // Don't convert borderColor/hoverLightColor - glass effect expects "R, G, B, A" format
-      // borderColor: toCssColor(cfg.overlays.borderColor),
-      // hoverLightColor: toCssColor(cfg.overlays.hoverLightColor),
-    },
-    warp: {
-      ...cfg.warp,
-      color: toCssColor(cfg.warp.color),
-    },
-    shine: {
-      ...cfg.shine,
-      color: toCssColor(cfg.shine.color),
-    },
-    // Hover borderColor already CSS; leave other hover props as-is
-  });
-
-  // Recreate glass effect when interactions or edge mask settings change
+  /**
+   * Initialize or recreate the glass effect when critical settings change
+   * This effect handles the creation and destruction of the glass effect instance
+   */
   useEffect(() => {
     const element = glassRef.current;
     if (!element) return;
 
-    // Remove all child nodes except the React content (text, etc.)
+    // Remove any existing glass effect layers (except React content)
     Array.from(element.children).forEach((child) => {
       if (
         child instanceof HTMLElement &&
@@ -75,18 +86,25 @@ export function GlassObject({
     });
 
     const configWithCssColors = withCssColors(config);
-
     let destroyed = false;
-    // Import and initialize glass effect dynamically
-    // @ts-expect-error - glass-effect is a plain JS module
-    import("../../../dist/glass-effect.esm.js").then((module: any) => {
-      if (destroyed) return;
-      const GlassEffect = module.GlassEffect;
-      if (glassEffectRef.current?.destroy) {
-        glassEffectRef.current.destroy();
+
+    // Dynamically import and initialize the glass effect
+    import("../assets/js/glass-effect.esm.js").then(
+      (module: {
+        GlassEffect: new (element: HTMLElement, config: any) => GlassEffect;
+      }) => {
+        if (destroyed) return;
+        const { GlassEffect } = module;
+
+        // Clean up previous instance if it exists
+        if (glassEffectRef.current?.destroy) {
+          glassEffectRef.current.destroy();
+        }
+
+        // Create new glass effect instance
+        glassEffectRef.current = new GlassEffect(element, configWithCssColors);
       }
-      glassEffectRef.current = new GlassEffect(element, configWithCssColors);
-    });
+    );
 
     return () => {
       destroyed = true;
@@ -95,6 +113,7 @@ export function GlassObject({
       }
     };
   }, [
+    // Dependencies that require full recreation of the effect
     config.interactions.enabled,
     config.interactions.elasticity,
     config.interactions.activationZone,
@@ -103,15 +122,20 @@ export function GlassObject({
     config.edgeMaskArithmeticBlend,
   ]);
 
-  // Update config when it changes
+  /**
+   * Update the glass effect configuration when it changes
+   * This effect performs a deep merge of configuration changes
+   * without recreating the entire effect instance
+   */
   useEffect(() => {
     if (glassEffectRef.current) {
       const configWithCssColors = withCssColors(config);
-      // Deep merge config to preserve nested object changes (including shader params)
+
+      // Deep merge config to preserve nested object changes
       glassEffectRef.current.config = {
         ...glassEffectRef.current.config,
         ...configWithCssColors,
-        // Ensure shader parameters are included
+        // Ensure all shader parameters are included
         shaderEdgeFadeStart: configWithCssColors.shaderEdgeFadeStart,
         shaderEdgeFadeOffset: configWithCssColors.shaderEdgeFadeOffset,
         shaderCornerRadius: configWithCssColors.shaderCornerRadius,
@@ -119,6 +143,7 @@ export function GlassObject({
         shaderHeightFactor: configWithCssColors.shaderHeightFactor,
         shaderEdgeDistanceDivisor:
           configWithCssColors.shaderEdgeDistanceDivisor,
+        // Deep merge nested objects
         warp: {
           ...glassEffectRef.current.config.warp,
           ...configWithCssColors.warp,
@@ -144,10 +169,15 @@ export function GlassObject({
           },
         },
       };
+
+      // Trigger a visual update with the new configuration
       glassEffectRef.current.update();
     }
   }, [config]);
 
+  /**
+   * Handle mouse down event to initiate dragging
+   */
   const handleMouseDown = (e: React.MouseEvent) => {
     isDragging.current = true;
     dragOffset.current = {
@@ -157,6 +187,9 @@ export function GlassObject({
     e.preventDefault();
   };
 
+  /**
+   * Set up global mouse event listeners for drag functionality
+   */
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging.current) {

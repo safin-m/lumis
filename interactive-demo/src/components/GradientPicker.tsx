@@ -1,30 +1,36 @@
+/**
+ * GradientPicker Component
+ *
+ * A component for creating and editing gradients with two color stops.
+ * Supports both linear and radial gradients with adjustable angle.
+ * Provides a visual preview of the gradient as it's being edited.
+ */
+
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { rgbaString } from "@/utils/colorUtils";
 import { useEffect, useRef, useState } from "react";
 import { ColorPickerCustom } from "./ColorPickerCustom";
 
 interface GradientPickerProps {
+  /** Optional label for the gradient picker */
   label?: string;
+  /** Gradient configuration value */
   value: {
     color1: string; // "R, G, B, A"
     color2: string; // "R, G, B, A"
     angle: number; // degrees
     type: "linear" | "radial";
   };
+  /** Callback fired when gradient changes */
   onChange: (value: GradientPickerProps["value"]) => void;
 }
 
-function rgbaString(color: string) {
-  // Accepts "R, G, B, A" or rgba(...)
-  const match = color.match(/^(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?$/);
-  if (match) {
-    const [r, g, b, a] = [match[1], match[2], match[3], match[4] ?? "1"];
-    return `rgba(${r}, ${g}, ${b}, ${a})`;
-  }
-  return color;
-}
-
+/**
+ * GradientPicker provides an intuitive interface for creating
+ * and editing gradients with live preview
+ */
 export function GradientPicker({
   label,
   value,
@@ -36,21 +42,32 @@ export function GradientPicker({
   const [type, setType] = useState<"linear" | "radial">(value.type || "linear");
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  /**
+   * Notify parent component of gradient changes
+   */
   useEffect(() => {
     onChange({ color1, color2, angle, type });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [color1, color2, angle, type]);
 
+  /**
+   * Draw gradient preview on canvas
+   * Updates whenever gradient properties change
+   */
   useEffect(() => {
-    // Draw gradient preview
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
     const w = canvas.width;
     const h = canvas.height;
+
     ctx.clearRect(0, 0, w, h);
+
     let grad: CanvasGradient;
+
     if (type === "linear") {
       // Calculate start/end points based on angle
       const rad = (angle * Math.PI) / 180;
@@ -60,6 +77,7 @@ export function GradientPicker({
       const y1 = h / 2 + (Math.sin(rad) * h) / 2;
       grad = ctx.createLinearGradient(x0, y0, x1, y1);
     } else {
+      // Radial gradient from center
       grad = ctx.createRadialGradient(
         w / 2,
         h / 2,
@@ -69,6 +87,7 @@ export function GradientPicker({
         Math.max(w, h) / 2
       );
     }
+
     grad.addColorStop(0, rgbaString(color1));
     grad.addColorStop(1, rgbaString(color2));
     ctx.fillStyle = grad;
