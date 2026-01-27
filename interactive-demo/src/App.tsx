@@ -9,6 +9,7 @@
 import type { GlassEffect } from "@/assets/js/glass-effect.esm.js";
 import { useRef, useState } from "react";
 import { BackgroundContent } from "./components/BackgroundContent";
+import { DisplacementPanel } from "./components/DisplacementPanel";
 import { GlassObject } from "./components/GlassObject";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { DEFAULT_POSITION, INITIAL_CONFIG } from "./constants";
@@ -68,6 +69,9 @@ function App() {
         onConfigChange={setConfig}
         glassEffectRef={glassEffectRef}
       />
+
+      {/* Displacement preview panel (beside settings) */}
+      <DisplacementPanel glassEffectRef={glassEffectRef} />
     </div>
   );
 }
