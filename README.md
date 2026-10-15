@@ -1,6 +1,18 @@
-# Glass Effect Library
+<p align="center">
+  <img src="interactive-demo/public/favicon.svg" alt="Lumis logo" width="96" height="96" />
+</p>
 
-A highly customizable glass morphism effect library with advanced features including SVG displacement mapping, chromatic aberration, elastic mouse interactions, dynamic overlays, and customizable visual effects.
+<h1 align="center">Lumis</h1>
+
+<p align="center">
+  <a href="https://safin-m.github.io/lumis/"><strong>Live Interactive Demo</strong></a>
+</p>
+
+<p align="center">
+  <a href="https://safin-m.github.io/lumis/"><img src="interactive-demo/public/og-image.png" alt="Lumis interactive demo" width="720" /></a>
+</p>
+
+Lumis is a highly customizable glass morphism effect library with advanced features including SVG displacement mapping, chromatic aberration, elastic mouse interactions, dynamic overlays, and customizable visual effects.
 
 ## Features
 

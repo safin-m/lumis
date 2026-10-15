@@ -43,7 +43,7 @@ export function DisplacementPanel({ glassEffectRef }: Props) {
             // If style exists, try to append sizing rules
             modified = modified.replace(
               /^<svg\b([^>]*)style=("|')([^"']*)("|')/i,
-              (m, before, q1, styleVal) => {
+              (_m, before, _q1, styleVal) => {
                 return `<svg${before}style="${styleVal};width:100%;height:auto;display:block;"`;
               },
             );

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://safin-m.github.io/lumis/sitemap.xml
